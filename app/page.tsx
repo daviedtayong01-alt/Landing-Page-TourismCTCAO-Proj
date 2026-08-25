@@ -1,9 +1,9 @@
 import Link from "next/link";
 
 import { Container } from "@/components/layout/Container";
+import { EstablishmentCard } from "@/components/home/EstablishmentCard";
 import { establishments } from "@/data/tourism";
 
-import { EstablishmentCard } from "@/components/home/EstablishmentCard";
 export function EstablishmentsSection() {
   return (
     <section
@@ -13,13 +13,13 @@ export function EstablishmentsSection() {
       <Container>
         <div className="flex items-end justify-between gap-6">
           <div>
-            <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--tourism-accent)]">
+            <p className="text-xs font-bold uppercase tracking-[0.18em] text-tourism-accent">
               Directory
             </p>
 
             <h2
               id="establishments-heading"
-              className="mt-2 text-3xl font-bold tracking-tight text-[var(--tourism-primary)] sm:text-4xl"
+              className="mt-2 text-3xl font-bold tracking-tight text-tourism-primary sm:text-4xl"
             >
               DOT Accredited Establishments
             </h2>
@@ -27,38 +27,42 @@ export function EstablishmentsSection() {
 
           <Link
             href="/business-directory"
-            className="hidden shrink-0 text-sm font-semibold text-[var(--tourism-accent)] transition-transform hover:translate-x-0.5 sm:inline-flex"
+            className="hidden text-sm font-semibold text-tourism-accent sm:inline-flex"
           >
-            View Full Directory
-            <span
-              className="ml-1"
-              aria-hidden="true"
-            >
-              →
-            </span>
+            View Full Directory →
           </Link>
         </div>
 
-        <div className="mt-8 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
-          {establishments.map(
-            (establishment) => (
-              <EstablishmentCard
-                key={establishment.id}
-                establishment={
-                  establishment
-                }
-              />
-            ),
-          )}
+        <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+          {establishments.map((establishment) => (
+            <EstablishmentCard
+              key={establishment.id}
+              establishment={establishment}
+            />
+          ))}
         </div>
 
-        <Link
-          href="/business-directory"
-          className="mt-6 inline-flex min-h-11 w-full items-center justify-center rounded-full border border-[var(--tourism-primary)] px-5 text-sm font-semibold text-[var(--tourism-primary)] sm:hidden"
-        >
-          View Full Directory
-        </Link>
+        <div className="mt-6 sm:hidden">
+          <Link
+            href="/business-directory"
+            className="text-sm font-semibold text-tourism-accent"
+          >
+            View Full Directory →
+          </Link>
+        </div>
       </Container>
     </section>
+  );
+}
+
+
+export default function Home() {
+  return (
+    <main>
+      
+      <section className="min-h-screen bg-tourism-primary" />
+
+      <EstablishmentsSection />
+    </main>
   );
 }
