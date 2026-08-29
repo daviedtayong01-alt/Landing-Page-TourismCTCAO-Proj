@@ -1,0 +1,74 @@
+import Link from "next/link";
+
+import {
+  MapPin,
+  Users,
+} from "lucide-react";
+
+import { FavoriteButton } from "@/components/home/FavoriteButton";
+import { TourismImage } from "@/components/home/TourismImage";
+import type { MiceVenue } from "@/types/tourism";
+
+interface MiceVenueCardProps {
+  venue: MiceVenue;
+}
+
+export function MiceVenueCard({ venue }: MiceVenueCardProps) {
+  return (
+    <article className="group flex h-full min-w-0 flex-col overflow-hidden rounded-2xl border border-tourism-border bg-white shadow-[0_8px_25px_rgba(18,59,96,.08)] transition hover:-translate-y-1 hover:shadow-[0_15px_35px_rgba(18,59,96,.12)]">
+      <div className="relative aspect-[1.72] overflow-hidden">
+        <TourismImage
+          src={venue.image}
+          alt={venue.imageAlt}
+          sizes="(max-width: 768px) 100vw, 33vw"
+          fallbackLabel="Venue photography unavailable"
+        />
+
+        <span className="absolute left-3 top-3 rounded-full bg-tourism-navy px-2.5 py-1 text-[8px] font-extrabold uppercase tracking-wide text-white">
+          {venue.venueType}
+        </span>
+
+        <FavoriteButton
+          itemId={`mice:${venue.id}`}
+          label={venue.name}
+          className="absolute right-3 top-3 flex size-9 items-center justify-center rounded-full bg-white/95 text-tourism-pink shadow-md transition hover:scale-105"
+        />
+      </div>
+
+      <div className="flex flex-1 flex-col p-5">
+        <h2 className="min-h-[40px] text-base font-extrabold leading-5 text-tourism-navy">
+          {venue.name}
+        </h2>
+
+        <div className="mt-3 space-y-2 text-[10px] leading-4 text-tourism-muted">
+          <p className="flex items-start gap-1.5">
+            <MapPin className="mt-0.5 size-3 shrink-0" />
+            {venue.location}
+          </p>
+          <p className="flex items-center gap-1.5">
+            <Users className="size-3 shrink-0" />
+            {venue.capacity}
+          </p>
+        </div>
+
+        <div className="mt-4 min-h-[52px] flex flex-wrap content-start gap-1.5">
+          {venue.tags.map((tag) => (
+            <span
+              key={tag}
+              className="rounded-full bg-tourism-pink/10 px-2.5 py-1 text-[8px] font-bold text-tourism-pink"
+            >
+              {tag}
+            </span>
+          ))}
+        </div>
+
+        <Link
+          href={`/mice/${venue.id}`}
+          className="mt-auto flex min-h-9 items-center justify-center rounded-lg border border-tourism-navy/25 text-[10px] font-extrabold text-tourism-navy transition hover:bg-tourism-navy hover:text-white"
+        >
+          View Venue
+        </Link>
+      </div>
+    </article>
+  );
+}

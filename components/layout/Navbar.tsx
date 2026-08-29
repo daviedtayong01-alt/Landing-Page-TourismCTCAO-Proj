@@ -1,119 +1,199 @@
 "use client";
 
 import Link from "next/link";
+import { Heart, Search } from "lucide-react";
+import { useSyncExternalStore } from "react";
+
 import {
-  Menu,
-  Search,
-} from "lucide-react";
-import { Button } from "@heroui/react";
-import { useState } from "react";
+  getFavoriteCount,
+  subscribeToFavorites,
+} from "@/lib/favorites";
 
 import { Container } from "./Container";
 import { MobileMenu } from "./MobileMenu";
 
-const navigationLinks = [
-  { label: "Destinations", href: "/destinations" },
-  { label: "Stay & Eat", href: "/stay-and-eat" },
-  { label: "Events", href: "/events" },
-  { label: "Transport", href: "/transport" },
-  { label: "Business Directory", href: "/business-directory" },
-  { label: "Reports", href: "/reports" },
+/**
+ * Primary navigation configuration.
+ *
+ * IMPORTANT:
+ * `id` represents the identity of the navigation item.
+ * `href` represents where the item navigates.
+ *
+ * These are intentionally separate because multiple navigation items
+ * can currently point to the same route.
+ *
+ * Example:
+ *   DOT Listed -> /business-directory
+ *   Stay & Eat  -> /business-directory
+ *
+ * Using `href` as the React key would therefore create duplicate keys.
+ */
+const navigation = [
+  {
+    id: "home",
+    label: "Home",
+    href: "/",
+  },
+  {
+    id: "destinations",
+    label: "Destinations",
+    href: "/destinations",
+  },
+  {
+    id: "dot-listed",
+    label: "DOT Listed",
+    href: "/business-directory",
+  },
+  {
+    id: "stay-eat",
+    label: "Stay & Eat",
+    href: "/business-directory",
+  },
+  {
+    id: "transport",
+    label: "Transport",
+    href: "/transport",
+  },
+  {
+    id: "mice",
+    label: "MICE",
+    href: "/mice",
+  },
+  {
+    id: "events",
+    label: "Events",
+    href: "/events",
+  },
+  {
+    id: "reports",
+    label: "Reports",
+    href: "/reports",
+  },
 ];
 
 export function Navbar() {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const favoriteCount = useSyncExternalStore(
+    subscribeToFavorites,
+    getFavoriteCount,
+    () => 0,
+  );
 
   return (
-    <header className="bg-[var(--tourism-primary-dark)] text-white">
+    <header className="absolute inset-x-0 top-0 z-50">
       <Container>
         <nav
-          className="flex min-h-18 items-center justify-between gap-6"
-          aria-label="Main navigation"
+          aria-label="Primary navigation"
+          className="flex h-[70px] items-center justify-between gap-4"
         >
-          {/* Brand */}
+          {/* =========================================================
+              BRAND
+              ========================================================= */}
+
           <Link
             href="/"
-            className="flex shrink-0 items-center gap-3"
-            onClick={() => setIsMenuOpen(false)}
+            aria-label="City of Koronadal tourism home"
+            className="flex shrink-0 items-center gap-2.5"
           >
-            <div className="flex size-10 items-center justify-center rounded-full bg-white/10 text-sm font-bold">
-              VK
-            </div>
+            {/* CK = City of Koronadal */}
+            <span
+              aria-hidden="true"
+              className="flex size-9 items-center justify-center rounded-full bg-white text-[10px] font-black text-tourism-navy shadow-sm"
+            >
+              CK
+            </span>
 
-            <div className="hidden leading-tight sm:block">
-              <div className="font-bold">
-                Visit Koronadal
-              </div>
+            <span className="hidden leading-none sm:block">
+              <span className="block text-[13px] font-black tracking-tight text-white">
+                VISIT KORONADAL
+              </span>
 
-              <div className="text-[10px] font-medium uppercase tracking-wider text-white/70">
-                South Cotabato
-              </div>
-            </div>
+              <span className="mt-1 block text-[7px] font-bold uppercase tracking-[0.18em] text-white/75">
+                CITY GOVERNMENT PORTAL
+              </span>
+            </span>
           </Link>
 
-          {/* Desktop Navigation */}
-          <div className="hidden items-center gap-5 lg:flex">
-            {navigationLinks.map((link) => (
+          {/* =========================================================
+              DESKTOP NAVIGATION
+
+              DEBUG: NAVIGATION_KEYS
+
+              Each item uses its own stable `id` as the React key.
+              Do NOT use `item.href` here because DOT Listed and
+              Stay & Eat currently share /business-directory.
+              ========================================================= */}
+
+          <div className="hidden items-center gap-5 xl:flex">
+            {navigation.map((item) => (
               <Link
-                key={link.href}
-                href={link.href}
-                className="text-sm font-medium text-white/90 transition-colors hover:text-white"
+                key={item.id}
+                href={item.href}
+                className="text-[10px] font-bold text-white/90 transition hover:text-white"
               >
-                {link.label}
+                {item.label}
               </Link>
             ))}
           </div>
 
-          {/* Desktop Actions */}
-          <div className="hidden items-center gap-3 lg:flex">
-            <button
-              type="button"
-              className="text-sm font-semibold text-white/90 hover:text-white"
-              aria-label="Change language"
-            >
-              EN
-            </button>
+          {/* =========================================================
+              RIGHT ACTIONS
+              ========================================================= */}
 
-            <button
-              type="button"
-              className="inline-flex size-9 items-center justify-center rounded-md transition-colors hover:bg-white/10"
-              aria-label="Search"
+          <div className="hidden items-center gap-3 lg:flex">
+            <Link
+              href="/search"
+              aria-label="Search tourism listings"
+              className="flex size-8 items-center justify-center rounded-full text-white transition hover:bg-white/10"
             >
               <Search className="size-4" />
-            </button>
+            </Link>
 
-            <Button
-              size="sm"
-              className="bg-[#8f0050] font-semibold text-white"
+            <Link
+              href="/search?favorites=true"
+              aria-label={`Favorites: ${favoriteCount}`}
+              className="flex items-center gap-1 rounded-full px-1 text-white transition hover:bg-white/10"
+            >
+              <Heart className="size-3.5" />
+
+              <span className="flex min-w-4 items-center justify-center rounded-full bg-tourism-pink px-1 py-0.5 text-[7px] font-black text-white">
+                {favoriteCount}
+              </span>
+            </Link>
+
+            <span className="text-[9px] font-bold text-white">
+              EN
+            </span>
+
+            <span
+              aria-hidden="true"
+              className="text-[9px] text-white/40"
+            >
+              /
+            </span>
+
+            <span className="text-[9px] font-semibold text-white/65">
+              FIL
+            </span>
+
+            <Link
+              href="/reports"
+              className="rounded-full bg-tourism-pink px-4 py-2.5 text-[9px] font-extrabold text-white transition hover:bg-tourism-pink-dark"
             >
               Report an Update
-            </Button>
+            </Link>
           </div>
 
-          {/* Mobile Menu Button */}
-          <button
-            type="button"
-            onClick={() => setIsMenuOpen((current) => !current)}
-            aria-expanded={isMenuOpen}
-            aria-controls="mobile-navigation"
-            aria-label={
-              isMenuOpen
-                ? "Close navigation menu"
-                : "Open navigation menu"
-            }
-            className="inline-flex size-10 items-center justify-center rounded-md transition-colors hover:bg-white/10 lg:hidden"
-          >
-            <Menu className="size-5" />
-          </button>
+          {/* =========================================================
+              MOBILE NAVIGATION
+
+              MobileMenu remains responsible for the mobile
+              navigation UI. The favorite count is passed through
+              exactly as before.
+              ========================================================= */}
+
+          <MobileMenu favoriteCount={favoriteCount} />
         </nav>
       </Container>
-
-      <div id="mobile-navigation">
-        <MobileMenu
-          open={isMenuOpen}
-          onClose={() => setIsMenuOpen(false)}
-        />
-      </div>
     </header>
   );
 }
