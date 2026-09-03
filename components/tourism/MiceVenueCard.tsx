@@ -13,9 +13,11 @@ interface MiceVenueCardProps {
   venue: MiceVenue;
 }
 
-export function MiceVenueCard({ venue }: MiceVenueCardProps) {
+export function MiceVenueCard({
+  venue,
+}: MiceVenueCardProps) {
   return (
-    <article className="group flex h-full min-w-0 flex-col overflow-hidden rounded-2xl border border-tourism-border bg-white shadow-[0_8px_25px_rgba(18,59,96,.08)] transition hover:-translate-y-1 hover:shadow-[0_15px_35px_rgba(18,59,96,.12)]">
+    <article className="group flex h-full min-w-0 flex-col overflow-hidden rounded-2xl border border-tourism-border bg-white shadow-[0_8px_25px_rgba(18,59,96,.08)] transition hover:-translate-y-1 hover:shadow-[0_15px_35px_rgba(18,59,96,.12)] motion-reduce:transition-none motion-reduce:hover:translate-y-0">
       <div className="relative aspect-[1.72] overflow-hidden">
         <TourismImage
           src={venue.image}
@@ -31,7 +33,7 @@ export function MiceVenueCard({ venue }: MiceVenueCardProps) {
         <FavoriteButton
           itemId={`mice:${venue.id}`}
           label={venue.name}
-          className="absolute right-3 top-3 flex size-9 items-center justify-center rounded-full bg-white/95 text-tourism-pink shadow-md transition hover:scale-105"
+          className="absolute right-3 top-3 flex size-9 items-center justify-center rounded-full bg-white/95 text-tourism-pink shadow-md transition hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-tourism-pink focus-visible:ring-offset-2 motion-reduce:transition-none motion-reduce:hover:scale-100"
         />
       </div>
 
@@ -42,16 +44,23 @@ export function MiceVenueCard({ venue }: MiceVenueCardProps) {
 
         <div className="mt-3 space-y-2 text-[10px] leading-4 text-tourism-muted">
           <p className="flex items-start gap-1.5">
-            <MapPin className="mt-0.5 size-3 shrink-0" />
+            <MapPin
+              aria-hidden="true"
+              className="mt-0.5 size-3 shrink-0"
+            />
             {venue.location}
           </p>
+
           <p className="flex items-center gap-1.5">
-            <Users className="size-3 shrink-0" />
+            <Users
+              aria-hidden="true"
+              className="size-3 shrink-0"
+            />
             {venue.capacity}
           </p>
         </div>
 
-        <div className="mt-4 min-h-[52px] flex flex-wrap content-start gap-1.5">
+        <div className="mt-4 flex min-h-[52px] flex-wrap content-start gap-1.5">
           {venue.tags.map((tag) => (
             <span
               key={tag}
@@ -64,7 +73,7 @@ export function MiceVenueCard({ venue }: MiceVenueCardProps) {
 
         <Link
           href={`/mice/${venue.id}`}
-          className="mt-auto flex min-h-9 items-center justify-center rounded-lg border border-tourism-navy/25 text-[10px] font-extrabold text-tourism-navy transition hover:bg-tourism-navy hover:text-white"
+          className="mt-auto flex min-h-9 items-center justify-center rounded-lg border border-tourism-navy/25 text-[10px] font-extrabold text-tourism-navy transition hover:bg-tourism-navy hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-tourism-pink focus-visible:ring-offset-2 motion-reduce:transition-none"
         >
           View Venue
         </Link>

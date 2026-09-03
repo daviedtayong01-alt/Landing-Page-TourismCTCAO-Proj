@@ -8,47 +8,30 @@ const EMPTY_FAVORITES: string[] = [];
 
 let cachedFavorites: string[] | null = null;
 
-export function subscribeToFavorites(
-  callback: () => void,
-): () => void {
-  window.addEventListener(
-    FAVORITES_CHANGED_EVENT,
-    callback,
-  );
-
-  return () => {
-    window.removeEventListener(
-      FAVORITES_CHANGED_EVENT,
-      callback,
-    );
-  };
+function isBrowser(): boolean {
+  return typeof window !== "undefined";
 }
 
-export function getFavorites(): string[] {
-  if (
-    typeof window === "undefined"
-  ) {
+function readFavoritesFromStorage(): string[] {
+  if (!isBrowser()) {
     return EMPTY_FAVORITES;
   }
 
   try {
-    const raw =
-      window.localStorage.getItem(
-        FAVORITES_STORAGE_KEY,
-      );
+    const raw = window.localStorage.getItem(
+      FAVORITES_STORAGE_KEY,
+    );
 
     if (!raw) {
       return EMPTY_FAVORITES;
     }
 
-    const parsed: unknown =
-      JSON.parse(raw);
+    const parsed: unknown = JSON.parse(raw);
 
     if (
       !Array.isArray(parsed) ||
       !parsed.every(
-        (item) =>
-          typeof item === "string",
+        (item) => typeof item === "string",
       )
     ) {
       return EMPTY_FAVORITES;
@@ -60,14 +43,60 @@ export function getFavorites(): string[] {
   }
 }
 
-export function getFavoritesSnapshot(): string[] {
-  if (cachedFavorites) {
+export function subscribeToFavorites(
+  callback: () => void,
+): () => void {
+  if (!isBrowser()) {
+    return () => {};
+  }
+
+  const handleStorageChange = (
+    event: StorageEvent,
+  ) => {
+    if (
+      event.storageArea === window.localStorage &&
+      event.key === FAVORITES_STORAGE_KEY
+    ) {
+      cachedFavorites = readFavoritesFromStorage();
+      callback();
+    }
+  };
+
+  window.addEventListener(
+    FAVORITES_CHANGED_EVENT,
+    callback,
+  );
+
+  window.addEventListener(
+    "storage",
+    handleStorageChange,
+  );
+
+  return () => {
+    window.removeEventListener(
+      FAVORITES_CHANGED_EVENT,
+      callback,
+    );
+
+    window.removeEventListener(
+      "storage",
+      handleStorageChange,
+    );
+  };
+}
+
+export function getFavorites(): string[] {
+  if (cachedFavorites !== null) {
     return cachedFavorites;
   }
 
-  cachedFavorites = getFavorites();
+  cachedFavorites = readFavoritesFromStorage();
 
   return cachedFavorites;
+}
+
+export function getFavoritesSnapshot(): string[] {
+  return getFavorites();
 }
 
 export function getServerFavoritesSnapshot(): string[] {
@@ -77,18 +106,18 @@ export function getServerFavoritesSnapshot(): string[] {
 export function isFavorite(
   itemId: string,
 ): boolean {
-  return getFavorites().includes(
-    itemId,
-  );
+  return getFavorites().includes(itemId);
 }
 
 export function setFavorite(
   itemId: string,
   favorite: boolean,
 ): string[] {
-  const current =
-    getFavoritesSnapshot();
+  if (!isBrowser()) {
+    return getFavoritesSnapshot();
+  }
 
+  const current = getFavoritesSnapshot();
   const next = new Set(current);
 
   if (favorite) {
@@ -97,8 +126,7 @@ export function setFavorite(
     next.delete(itemId);
   }
 
-  const result =
-    Array.from(next);
+  const result = Array.from(next);
 
   cachedFavorites = result;
 
@@ -124,5 +152,5 @@ export function setFavorite(
 }
 
 export function getFavoriteCount(): number {
-  return getFavorites().length;
+  return getFavoritesSnapshot().length;
 }

@@ -1,7 +1,5 @@
 import Link from "next/link";
-import {
-  MapPinned,
-} from "lucide-react";
+import { MapPinned } from "lucide-react";
 
 import { Container } from "@/components/layout/Container";
 
@@ -13,7 +11,10 @@ export function KoronadalMap() {
     >
       <Container>
         <p className="flex items-center gap-3 text-[8px] font-extrabold uppercase tracking-[0.16em] text-tourism-accent">
-          <span className="h-px w-5 bg-tourism-accent" />
+          <span
+            aria-hidden="true"
+            className="h-px w-5 bg-tourism-accent"
+          />
           Interactive Guide
         </p>
 
@@ -22,44 +23,55 @@ export function KoronadalMap() {
             Explore the Tourism Map
           </h2>
 
-          <div className="flex w-fit rounded-lg bg-tourism-surface p-1">
-            <button
-              type="button"
-              className="rounded-md bg-white px-3 py-2 text-[8px] font-bold text-tourism-primary shadow-sm"
+          <div
+            aria-label="Map view"
+            className="flex w-fit rounded-lg bg-tourism-surface p-1"
+          >
+            <span
+              aria-current="true"
+              className="rounded-md bg-white px-3 py-2 text-[9px] font-bold text-tourism-primary shadow-sm"
             >
               Map View
-            </button>
-
-            <button
-              type="button"
-              className="rounded-md px-3 py-2 text-[8px] font-bold text-tourism-text-muted"
-            >
-              Grid View
-            </button>
+            </span>
           </div>
         </div>
 
         <div className="mt-6 overflow-hidden rounded-2xl border border-tourism-border bg-[#dbe9b2]">
           <div
             role="img"
-            aria-label="Tourism map preview"
+            aria-label="Tourism map preview showing selected destinations in Koronadal City, South Cotabato"
             className="relative min-h-[300px] overflow-hidden sm:min-h-[340px]"
           >
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_30%,rgba(28,112,74,.32)_0_7%,transparent_8%),radial-gradient(circle_at_65%_68%,rgba(28,112,74,.25)_0_11%,transparent_12%),linear-gradient(135deg,#dbeab8,#a8cc85)]" />
+            <div
+              aria-hidden="true"
+              className="absolute inset-0 bg-[radial-gradient(circle_at_20%_30%,rgba(28,112,74,.32)_0_7%,transparent_8%),radial-gradient(circle_at_65%_68%,rgba(28,112,74,.25)_0_11%,transparent_12%),linear-gradient(135deg,#dbeab8,#a8cc85)]"
+            />
 
-            <div className="absolute left-[19%] top-[38%] rounded-full bg-tourism-accent px-3 py-1 text-[8px] font-extrabold text-white shadow-lg">
+            <div
+              aria-hidden="true"
+              className="absolute left-[19%] top-[38%] rounded-full bg-tourism-accent px-3 py-1 text-[8px] font-extrabold text-white shadow-lg"
+            >
               Siok Falls
             </div>
 
-            <div className="absolute left-[54%] top-[48%] rounded-full bg-tourism-accent px-3 py-1 text-[8px] font-extrabold text-white shadow-lg">
+            <div
+              aria-hidden="true"
+              className="absolute left-[54%] top-[48%] rounded-full bg-tourism-accent px-3 py-1 text-[8px] font-extrabold text-white shadow-lg"
+            >
               Paraiso Verde
             </div>
 
-            <div className="absolute right-[17%] top-[27%] rounded-full bg-tourism-primary px-3 py-1 text-[8px] font-extrabold text-white shadow-lg">
+            <div
+              aria-hidden="true"
+              className="absolute right-[17%] top-[27%] rounded-full bg-tourism-primary px-3 py-1 text-[8px] font-extrabold text-white shadow-lg"
+            >
               Caddating Cave
             </div>
 
-            <div className="absolute inset-x-0 top-8 text-center">
+            <div
+              aria-hidden="true"
+              className="absolute inset-x-0 top-8 text-center"
+            >
               <p className="text-lg font-black tracking-tight text-tourism-primary/80">
                 KORONADAL CITY
               </p>
@@ -74,12 +86,14 @@ export function KoronadalMap() {
                 MAP LAYERS
               </p>
 
-              <p className="mt-2 text-[7px] text-tourism-text-muted">
-                ● Tourist Spots
+              <p className="mt-2 text-[8px] text-tourism-text-muted">
+                <span aria-hidden="true">●</span>{" "}
+                Tourist Spots
               </p>
 
-              <p className="mt-1 text-[7px] text-tourism-accent">
-                ● DOT Accredited
+              <p className="mt-1 text-[8px] text-tourism-accent">
+                <span aria-hidden="true">●</span>{" "}
+                DOT Accredited
               </p>
             </div>
           </div>
@@ -88,10 +102,13 @@ export function KoronadalMap() {
         <div className="mt-5 flex justify-center">
           <Link
             href="/search?category=destinations"
-            className="inline-flex min-h-11 items-center gap-2 rounded-full bg-tourism-primary px-6 py-3 text-[9px] font-extrabold text-white transition hover:bg-tourism-primary-dark"
+            className="inline-flex min-h-11 items-center gap-2 rounded-full bg-tourism-primary px-6 py-3 text-[9px] font-extrabold text-white transition hover:bg-tourism-primary-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-tourism-accent focus-visible:ring-offset-2 motion-reduce:transition-none"
           >
-            <MapPinned className="size-3" />
-            Open Full Interactive Map
+            <MapPinned
+              aria-hidden="true"
+              className="size-3"
+            />
+            Browse All Destinations
           </Link>
         </div>
       </Container>

@@ -1,5 +1,4 @@
 import Link from "next/link";
-
 import {
   MapPin,
   Star,
@@ -17,7 +16,7 @@ export function DestinationCard({
   destination,
 }: DestinationCardProps) {
   return (
-    <article className="group flex h-full min-w-0 flex-col overflow-hidden rounded-2xl border border-tourism-border bg-white shadow-[0_8px_25px_rgba(18,59,96,.08)] transition hover:-translate-y-1 hover:shadow-[0_15px_35px_rgba(18,59,96,.12)]">
+    <article className="group flex h-full min-w-0 flex-col overflow-hidden rounded-2xl border border-tourism-border bg-white shadow-[0_8px_25px_rgba(18,59,96,.08)] transition hover:-translate-y-1 hover:shadow-[0_15px_35px_rgba(18,59,96,.12)] motion-reduce:transition-none motion-reduce:hover:translate-y-0">
       <div className="relative aspect-[1.3] overflow-hidden">
         <TourismImage
           src={destination.image}
@@ -33,7 +32,7 @@ export function DestinationCard({
         <FavoriteButton
           itemId={`destination:${destination.id}`}
           label={destination.name}
-          className="absolute right-3 top-3 flex size-9 items-center justify-center rounded-full bg-white/95 text-tourism-pink shadow-md transition hover:scale-105"
+          className="absolute right-3 top-3 flex size-9 items-center justify-center rounded-full bg-white/95 text-tourism-pink shadow-md transition hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-tourism-pink focus-visible:ring-offset-2 motion-reduce:transition-none motion-reduce:hover:scale-100"
         />
       </div>
 
@@ -43,8 +42,14 @@ export function DestinationCard({
         </h2>
 
         <p className="mt-2 flex items-start gap-1.5 text-[10px] leading-4 text-tourism-muted">
-          <MapPin className="mt-0.5 size-3 shrink-0" />
-          <span>{destination.location} · {destination.distance}</span>
+          <MapPin
+            aria-hidden="true"
+            className="mt-0.5 size-3 shrink-0"
+          />
+          <span>
+            {destination.location} ·{" "}
+            {destination.distance}
+          </span>
         </p>
 
         <p className="mt-4 min-h-[60px] line-clamp-3 text-sm leading-5 text-tourism-muted">
@@ -52,14 +57,20 @@ export function DestinationCard({
         </p>
 
         <div className="mt-auto flex items-center justify-between gap-3 pt-5">
-          <span className="inline-flex items-center gap-1 text-xs font-bold text-tourism-pink">
-            <Star className="size-3 fill-current" />
+          <span
+            aria-label={`${destination.rating} destination rating`}
+            className="inline-flex items-center gap-1 text-xs font-bold text-tourism-pink"
+          >
+            <Star
+              aria-hidden="true"
+              className="size-3 fill-current"
+            />
             {destination.rating}
           </span>
 
           <Link
             href={`/destinations/${destination.id}`}
-            className="inline-flex min-h-9 items-center justify-center rounded-lg bg-tourism-pink px-4 text-[10px] font-extrabold text-white transition hover:bg-tourism-pink-dark"
+            className="inline-flex min-h-9 items-center justify-center rounded-lg bg-tourism-pink px-4 text-[10px] font-extrabold text-white transition hover:bg-tourism-pink-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-tourism-pink focus-visible:ring-offset-2 motion-reduce:transition-none"
           >
             Explore
           </Link>

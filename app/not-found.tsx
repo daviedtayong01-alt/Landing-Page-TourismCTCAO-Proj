@@ -7,6 +7,38 @@ import {
   Search,
 } from "lucide-react";
 
+const PORTAL_LINKS = {
+  home: { label: "Home", href: "/" },
+  destinations: { label: "Destinations", href: "/destinations" },
+  dotListed: { label: "DOT Listed", href: "/business-directory" },
+  transport: { label: "Transport", href: "/transport" },
+  mice: { label: "MICE", href: "/mice" },
+  events: { label: "Events", href: "/events" },
+  reports: { label: "Reports", href: "/reports" },
+  search: { label: "Search", href: "/search" },
+} as const;
+
+const PRIMARY_NAV = [
+  PORTAL_LINKS.home,
+  PORTAL_LINKS.destinations,
+  PORTAL_LINKS.dotListed,
+  PORTAL_LINKS.transport,
+  PORTAL_LINKS.mice,
+  PORTAL_LINKS.events,
+] as const;
+
+const FOOTER_EXPLORE_LINKS = [
+  PORTAL_LINKS.destinations,
+  PORTAL_LINKS.dotListed,
+  PORTAL_LINKS.events,
+] as const;
+
+const FOOTER_INFORMATION_LINKS = [
+  PORTAL_LINKS.transport,
+  PORTAL_LINKS.mice,
+  PORTAL_LINKS.reports,
+] as const;
+
 const RECOVERY_LINKS = [
   {
     number: "01",
@@ -14,7 +46,7 @@ const RECOVERY_LINKS = [
     title: "Explore somewhere new",
     description:
       "Discover attractions, nature spots, cultural places, and experiences around Koronadal.",
-    href: "/destinations",
+    href: PORTAL_LINKS.destinations.href,
   },
   {
     number: "02",
@@ -22,7 +54,7 @@ const RECOVERY_LINKS = [
     title: "Find a place to stay",
     description:
       "Browse tourism establishments and accredited places to stay, eat, and experience.",
-    href: "/business-directory",
+    href: PORTAL_LINKS.dotListed.href,
   },
   {
     number: "03",
@@ -30,7 +62,7 @@ const RECOVERY_LINKS = [
     title: "See what's happening",
     description:
       "Find festivals, activities, community events, and tourism updates in the city.",
-    href: "/events",
+    href: PORTAL_LINKS.events.href,
   },
 ] as const;
 
@@ -62,7 +94,7 @@ function ExplorerCat() {
 
       {/* Oversized 404 */}
       <div className="absolute inset-x-0 bottom-8 flex items-end justify-center select-none">
-        <span className="text-[145px] font-black leading-[0.7] tracking-[-0.12em] text-[#e8d38e]/65 sm:text-[190px]">
+        <span className="text-[clamp(7.5rem,42vw,11.875rem)] font-black leading-[0.7] tracking-[-0.12em] text-[#e8d38e]/65">
           404
         </span>
       </div>
@@ -142,7 +174,7 @@ function ExplorerCat() {
           <div className="absolute left-5 top-8 h-1 w-8 rotate-[8deg] bg-[#e82787]/45" />
 
           <div className="absolute right-3 top-3 flex size-4 items-center justify-center rounded-full bg-[#e82787]">
-            <MapPin className="size-2.5 text-white" fill="currentColor" />
+            <MapPin aria-hidden="true" className="size-2.5 text-white" fill="currentColor" />
           </div>
         </div>
 
@@ -157,7 +189,7 @@ function ExplorerCat() {
 
       {/* Compass */}
       <div className="absolute bottom-[38px] right-[7%] flex size-12 rotate-[10deg] items-center justify-center rounded-full border-[3px] border-[#163f60] bg-[#f7f5ef] shadow-[0_8px_20px_rgba(22,63,96,0.12)] sm:right-[10%] sm:size-14">
-        <Compass className="size-6 text-[#e82787] sm:size-7" />
+        <Compass aria-hidden="true" className="size-6 text-[#e82787] sm:size-7" />
 
         <span className="absolute -bottom-1 -right-1 flex size-4 items-center justify-center rounded-full bg-[#e82787] text-[7px] font-black text-white">
           ?
@@ -166,7 +198,7 @@ function ExplorerCat() {
 
       {/* Little location marker */}
       <div className="absolute bottom-[70px] left-[8%] flex size-8 items-center justify-center rounded-full bg-[#e82787] shadow-[0_7px_15px_rgba(232,39,135,0.2)] sm:left-[12%] sm:size-9">
-        <MapPin className="size-3.5 text-white" fill="currentColor" />
+        <MapPin aria-hidden="true" className="size-3.5 text-white" fill="currentColor" />
       </div>
     </div>
   );
@@ -182,7 +214,7 @@ export default function NotFound() {
       <header className="bg-[#0f3f61] text-white">
         <div className="mx-auto flex h-[70px] w-full max-w-[1440px] items-center justify-between px-5 sm:px-8 lg:px-12">
           <Link
-            href="/"
+            href={PORTAL_LINKS.home.href}
             aria-label="Visit Koronadal home"
             className="flex items-center gap-2.5 rounded-md outline-none focus-visible:ring-2 focus-visible:ring-[#e82787] focus-visible:ring-offset-2 focus-visible:ring-offset-[#0f3f61]"
           >
@@ -195,53 +227,33 @@ export default function NotFound() {
                 VISIT KORONADAL
               </span>
 
-              <span className="mt-1 block text-[7px] font-bold uppercase tracking-[0.18em] text-white/60">
+              <span className="mt-1 block text-[9px] font-bold uppercase tracking-[0.18em] text-white/60">
                 CITY GOVERNMENT PORTAL
               </span>
             </span>
           </Link>
 
           <nav
-            aria-label="404 navigation"
-            className="hidden items-center gap-7 text-[10px] font-bold text-white/75 md:flex"
+            aria-label="Primary navigation"
+            className="hidden items-center gap-7 text-[11px] font-bold text-white/75 md:flex"
           >
-            <Link href="/" className="transition hover:text-white">
-              Home
-            </Link>
-
-            <Link
-              href="/destinations"
-              className="transition hover:text-white"
-            >
-              Destinations
-            </Link>
-
-            <Link
-              href="/business-directory"
-              className="transition hover:text-white"
-            >
-              DOT Listed
-            </Link>
-
-            <Link href="/transport" className="transition hover:text-white">
-              Transport
-            </Link>
-
-            <Link href="/mice" className="transition hover:text-white">
-              MICE
-            </Link>
-
-            <Link href="/events" className="transition hover:text-white">
-              Events
-            </Link>
+            {PRIMARY_NAV.map((item) => (
+              <Link
+                key={item.href}
+                href={item.href}
+                className="rounded-sm transition motion-reduce:transition-none hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#e82787] focus-visible:ring-offset-2 focus-visible:ring-offset-[#0f3f61]"
+              >
+                {item.label}
+              </Link>
+            ))}
           </nav>
 
           <Link
-            href="/search"
+            href={PORTAL_LINKS.search.href}
             aria-label="Search Visit Koronadal"
             className="flex size-9 items-center justify-center rounded-full text-white/80 transition hover:bg-white/10 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#e82787]"
           >
-            <Search className="size-4" />
+            <Search aria-hidden="true" className="size-4" />
           </Link>
         </div>
       </header>
@@ -250,7 +262,7 @@ export default function NotFound() {
           MAIN
          ============================================================ */}
 
-      <main>
+      <main aria-labelledby="not-found-title" aria-describedby="not-found-description">
         {/* ============================================================
             INTRO
            ============================================================ */}
@@ -267,32 +279,32 @@ export default function NotFound() {
               <span className="h-px w-7 bg-[#e82787]" />
             </div>
 
-            <h1 className="mt-4 text-[clamp(2.6rem,6vw,4.8rem)] font-black leading-[0.92] tracking-[-0.06em] text-[#163f60]">
+            <h1 id="not-found-title" className="mt-4 text-[clamp(2.6rem,6vw,4.8rem)] font-black leading-[0.92] tracking-[-0.06em] text-[#163f60]">
               Oops. We lost
               <br />
               the trail.
             </h1>
 
-            <p className="mx-auto mt-5 max-w-[510px] text-[12px] leading-6 text-[#708697] sm:text-sm">
-              Even our little explorer couldn&apos;t find this page. The route
-              you followed doesn&apos;t lead anywhere in Visit Koronadal.
+            <p id="not-found-description" className="mx-auto mt-5 max-w-[510px] text-[12px] leading-6 text-[#708697] sm:text-sm">
+              Even our little explorer couldn&apos;t find the page or resource
+              you were looking for.
             </p>
 
             <div className="mt-7 flex flex-col items-center justify-center gap-2.5 sm:flex-row">
               <Link
-                href="/"
-                className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-[#e82787] px-7 text-[10px] font-extrabold text-white shadow-[0_9px_22px_rgba(232,39,135,0.18)] transition duration-200 hover:-translate-y-0.5 hover:bg-[#d91d78] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#e82787] focus-visible:ring-offset-2"
+                href={PORTAL_LINKS.home.href}
+                className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-[#e82787] px-7 text-[11px] font-extrabold text-white shadow-[0_9px_22px_rgba(232,39,135,0.18)] transition duration-200 motion-reduce:transition-none motion-reduce:hover:transform-none hover:-translate-y-0.5 hover:bg-[#d91d78] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#e82787] focus-visible:ring-offset-2"
               >
-                <ArrowLeft className="size-3.5" />
+                <ArrowLeft aria-hidden="true" className="size-3.5" />
                 Back to Home
               </Link>
 
               <Link
-                href="/destinations"
-                className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-[#163f60]/15 bg-white px-7 text-[10px] font-extrabold text-[#163f60] shadow-sm transition duration-200 hover:-translate-y-0.5 hover:border-[#163f60]/30 hover:bg-[#163f60]/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#e82787] focus-visible:ring-offset-2"
+                href={PORTAL_LINKS.destinations.href}
+                className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-[#163f60]/15 bg-white px-7 text-[10px] font-extrabold text-[#163f60] shadow-sm transition duration-200 motion-reduce:transition-none motion-reduce:hover:transform-none hover:-translate-y-0.5 hover:border-[#163f60]/30 hover:bg-[#163f60]/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#e82787] focus-visible:ring-offset-2"
               >
                 Explore Koronadal
-                <ArrowRight className="size-3.5" />
+                <ArrowRight aria-hidden="true" className="size-3.5" />
               </Link>
             </div>
           </div>
@@ -308,7 +320,7 @@ export default function NotFound() {
           <div className="-mt-1 flex items-center justify-center gap-2">
             <span className="size-1.5 rounded-full bg-[#e82787]" />
 
-            <p className="text-[8px] font-extrabold uppercase tracking-[0.2em] text-[#718798] sm:text-[9px]">
+            <p className="text-[9px] font-extrabold uppercase tracking-[0.2em] text-[#718798] sm:text-[10px]">
               Our guide got a little lost
             </p>
 
@@ -323,7 +335,7 @@ export default function NotFound() {
         <section className="mx-auto w-full max-w-6xl px-5 pb-16 pt-10 sm:px-8 sm:pt-12 lg:px-12">
           <div className="mb-5 flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
             <div>
-              <p className="text-[8px] font-extrabold uppercase tracking-[0.2em] text-[#e82787]">
+              <p className="text-[9px] font-extrabold uppercase tracking-[0.2em] text-[#e82787]">
                 Continue Exploring
               </p>
 
@@ -332,7 +344,7 @@ export default function NotFound() {
               </h2>
             </div>
 
-            <p className="max-w-xs text-[9px] leading-4 text-[#708697] sm:text-right">
+            <p className="max-w-xs text-[11px] leading-5 text-[#708697] sm:text-right">
               There&apos;s still plenty to discover around Koronadal.
             </p>
           </div>
@@ -342,28 +354,28 @@ export default function NotFound() {
               <Link
                 key={item.href}
                 href={item.href}
-                className="group relative flex min-h-[178px] flex-col overflow-hidden rounded-2xl border border-[#163f60]/10 bg-white p-5 shadow-[0_7px_25px_rgba(22,63,96,0.045)] transition duration-200 hover:-translate-y-1 hover:border-[#e82787]/25 hover:shadow-[0_14px_35px_rgba(22,63,96,0.09)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#e82787] focus-visible:ring-offset-2"
+                className="group relative flex min-h-[178px] flex-col overflow-hidden rounded-2xl border border-[#163f60]/10 bg-white p-5 shadow-[0_7px_25px_rgba(22,63,96,0.045)] transition duration-200 motion-reduce:transition-none motion-reduce:hover:transform-none hover:-translate-y-1 hover:border-[#e82787]/25 hover:shadow-[0_14px_35px_rgba(22,63,96,0.09)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#e82787] focus-visible:ring-offset-2"
               >
-                <span className="absolute left-0 top-0 h-1 w-12 rounded-br-full bg-[#e82787] transition-all duration-200 group-hover:w-20" />
+                <span className="absolute left-0 top-0 h-1 w-12 rounded-br-full bg-[#e82787] transition-all duration-200 motion-reduce:transition-none group-hover:w-20" />
 
                 <div className="flex items-center justify-between">
                   <span className="text-[9px] font-black tracking-[0.12em] text-[#163f60]/25">
                     {item.number}
                   </span>
 
-                  <ArrowRight className="size-4 text-[#163f60]/25 transition-all duration-200 group-hover:translate-x-1 group-hover:text-[#e82787]" />
+                  <ArrowRight aria-hidden="true" className="size-4 text-[#163f60]/25 transition-all duration-200 motion-reduce:transition-none group-hover:translate-x-1 group-hover:text-[#e82787]" />
                 </div>
 
                 <div className="mt-auto">
-                  <p className="text-[8px] font-extrabold uppercase tracking-[0.18em] text-[#e82787]">
+                  <p className="text-[9px] font-extrabold uppercase tracking-[0.18em] text-[#e82787]">
                     {item.eyebrow}
                   </p>
 
-                  <h3 className="mt-1.5 text-[15px] font-black tracking-[-0.02em] text-[#163f60]">
+                  <h3 className="mt-1.5 text-base font-black tracking-[-0.02em] text-[#163f60]">
                     {item.title}
                   </h3>
 
-                  <p className="mt-2 text-[10px] leading-5 text-[#708697]">
+                  <p className="mt-2 text-[11px] leading-5 text-[#708697]">
                     {item.description}
                   </p>
                 </div>
@@ -380,22 +392,22 @@ export default function NotFound() {
           <div className="mx-auto flex w-full max-w-6xl flex-col gap-3 px-5 py-5 sm:flex-row sm:items-center sm:justify-between sm:px-8 lg:px-12">
             <div className="flex items-center gap-3">
               <span className="flex size-8 items-center justify-center rounded-full bg-[#e82787]/10 text-[#e82787]">
-                <Compass className="size-4" />
+                <Compass aria-hidden="true" className="size-4" />
               </span>
 
               <div>
-                <p className="text-[8px] font-extrabold uppercase tracking-[0.18em] text-[#163f60]/45">
-                  Navigation Status
+                <p className="text-[9px] font-extrabold uppercase tracking-[0.18em] text-[#163f60]/55">
+                  Recovery Status
                 </p>
 
-                <p className="mt-0.5 font-mono text-[9px] font-bold text-[#163f60]">
+                <p className="mt-0.5 font-mono text-[10px] font-bold text-[#163f60]">
                   ROUTE_NOT_FOUND · 404
                 </p>
               </div>
             </div>
 
-            <p className="text-[8px] font-bold uppercase tracking-[0.14em] text-[#708697] sm:text-right">
-              Visit Koronadal is still online
+            <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-[#708697] sm:text-right">
+              Use the navigation above to continue exploring
             </p>
           </div>
         </section>
@@ -410,8 +422,8 @@ export default function NotFound() {
           <div className="grid gap-7 sm:grid-cols-2 lg:grid-cols-[1.5fr_1fr_1fr_1fr]">
             <div>
               <Link
-                href="/"
-                className="inline-flex items-center gap-2.5 rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#e82787]"
+                href={PORTAL_LINKS.home.href}
+                className="inline-flex items-center gap-2.5 rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#e82787] focus-visible:ring-offset-2 focus-visible:ring-offset-[#0f3f61]"
               >
                 <span className="flex size-8 items-center justify-center rounded-full bg-white text-[9px] font-black text-[#0f3f61]">
                   CK
@@ -422,82 +434,75 @@ export default function NotFound() {
                     VISIT KORONADAL
                   </span>
 
-                  <span className="mt-0.5 block text-[6px] font-bold uppercase tracking-[0.18em] text-white/45">
+                  <span className="mt-0.5 block text-[8px] font-bold uppercase tracking-[0.18em] text-white/55">
                     CITY GOVERNMENT PORTAL
                   </span>
                 </span>
               </Link>
 
-              <p className="mt-4 max-w-xs text-[9px] leading-5 text-white/45">
+              <p className="mt-4 max-w-xs text-[11px] leading-5 text-white/55">
                 Discover destinations, establishments, events, transport, and
                 tourism experiences in Koronadal.
               </p>
             </div>
 
             <div>
-              <p className="text-[8px] font-extrabold uppercase tracking-[0.18em] text-[#e82787]">
+              <p className="text-[9px] font-extrabold uppercase tracking-[0.18em] text-[#e82787]">
                 Explore
               </p>
 
-              <div className="mt-3 flex flex-col gap-2 text-[9px] text-white/55">
-                <Link href="/destinations" className="hover:text-white">
-                  Destinations
-                </Link>
-
-                <Link
-                  href="/business-directory"
-                  className="hover:text-white"
-                >
-                  DOT Listed
-                </Link>
-
-                <Link href="/events" className="hover:text-white">
-                  Events
-                </Link>
+              <div className="mt-3 flex flex-col gap-2 text-[11px] text-white/60">
+                {FOOTER_EXPLORE_LINKS.map((item) => (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className="rounded-sm hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#e82787] focus-visible:ring-offset-2 focus-visible:ring-offset-[#0f3f61]"
+                  >
+                    {item.label}
+                  </Link>
+                ))}
               </div>
             </div>
 
             <div>
-              <p className="text-[8px] font-extrabold uppercase tracking-[0.18em] text-[#e82787]">
+              <p className="text-[9px] font-extrabold uppercase tracking-[0.18em] text-[#e82787]">
                 Information
               </p>
 
-              <div className="mt-3 flex flex-col gap-2 text-[9px] text-white/55">
-                <Link href="/transport" className="hover:text-white">
-                  Transport
-                </Link>
-
-                <Link href="/mice" className="hover:text-white">
-                  MICE
-                </Link>
-
-                <Link href="/reports" className="hover:text-white">
-                  Reports
-                </Link>
+              <div className="mt-3 flex flex-col gap-2 text-[11px] text-white/60">
+                {FOOTER_INFORMATION_LINKS.map((item) => (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className="rounded-sm hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#e82787] focus-visible:ring-offset-2 focus-visible:ring-offset-[#0f3f61]"
+                  >
+                    {item.label}
+                  </Link>
+                ))}
               </div>
             </div>
 
             <div>
-              <p className="text-[8px] font-extrabold uppercase tracking-[0.18em] text-[#e82787]">
+              <p className="text-[9px] font-extrabold uppercase tracking-[0.18em] text-[#e82787]">
                 Need a Way Back?
               </p>
 
-              <p className="mt-3 text-[9px] leading-5 text-white/45">
+              <p className="mt-3 text-[11px] leading-5 text-white/55">
                 Search the portal to find the destination, establishment,
                 event, or tourism information you were looking for.
               </p>
 
               <Link
-                href="/search"
-                className="mt-3 inline-flex items-center gap-2 rounded-full bg-[#e82787] px-4 py-2 text-[8px] font-extrabold text-white transition hover:bg-[#d91d78]"
+                href={PORTAL_LINKS.search.href}
+                className="mt-3 inline-flex min-h-10 items-center gap-2 rounded-full bg-[#e82787] px-4 py-2 text-[11px] font-extrabold text-white transition motion-reduce:transition-none hover:bg-[#d91d78] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#e82787] focus-visible:ring-offset-2 focus-visible:ring-offset-[#0f3f61]"
               >
                 Search Portal
-                <ArrowRight className="size-3" />
+                <ArrowRight aria-hidden="true" className="size-3" />
               </Link>
             </div>
           </div>
 
-          <div className="mt-8 border-t border-white/10 pt-4 text-[8px] text-white/30">
+          <div className="mt-8 border-t border-white/10 pt-4 text-[10px] text-white/40">
             © City Government of Koronadal. All rights reserved.
           </div>
         </div>

@@ -7,13 +7,18 @@ import type {
   TourismEvent,
 } from "@/types/tourism";
 
-/*
+/**
  * ============================================================
  * ESTABLISHMENTS
  * ============================================================
  *
  * These values continue to serve the existing homepage,
  * business directory, business detail route, and search route.
+ *
+ * DEVELOPMENT DATA:
+ * Accreditation, amenities, descriptions, contact details,
+ * ratings, and other business attributes must be verified
+ * against an authorized source before production use.
  */
 
 export const establishments: Establishment[] = [
@@ -138,7 +143,7 @@ export const establishments: Establishment[] = [
   },
 ];
 
-/*
+/**
  * ============================================================
  * DESTINATIONS
  * ============================================================
@@ -290,10 +295,14 @@ export const destinations: Destination[] = [
   },
 ];
 
-/*
+/**
  * ============================================================
  * NEWS
  * ============================================================
+ *
+ * DEVELOPMENT DATA:
+ * Event dates, advisories, access conditions, and other
+ * time-sensitive information must be verified before publication.
  */
 
 export const newsItems: NewsItem[] = [
@@ -367,7 +376,7 @@ export const newsItems: NewsItem[] = [
   },
 ];
 
-/*
+/**
  * ============================================================
  * EXISTING SEARCH CONTRACT
  * ============================================================
@@ -461,10 +470,14 @@ export const tourismEvents: TourismEvent[] = [
   },
 ];
 
-/*
+/**
  * ============================================================
  * MICE
  * ============================================================
+ *
+ * DEVELOPMENT DATA:
+ * Accreditation and venue capacity must be verified against
+ * an authorized source before production use.
  */
 
 export const miceVenues: MiceVenue[] = [
@@ -483,7 +496,8 @@ export const miceVenues: MiceVenue[] = [
 
     capacityValue: 5000,
 
-    venueType: "Cultural center",
+    venueType:
+      "Cultural center",
 
     accredited: true,
 
@@ -515,7 +529,8 @@ export const miceVenues: MiceVenue[] = [
 
     capacityValue: 800,
 
-    venueType: "Ballroom",
+    venueType:
+      "Ballroom",
 
     accredited: true,
 
@@ -547,7 +562,8 @@ export const miceVenues: MiceVenue[] = [
 
     capacityValue: 400,
 
-    venueType: "Convention hall",
+    venueType:
+      "Convention hall",
 
     accredited: true,
 
@@ -565,10 +581,14 @@ export const miceVenues: MiceVenue[] = [
   },
 ];
 
-/*
+/**
  * ============================================================
  * EXPERIENCE
  * ============================================================
+ *
+ * These are presentation/demo records. Experience preview
+ * functionality should not be implemented until the data
+ * contract provides an actual media source.
  */
 
 export const experiences: ExperienceItem[] = [

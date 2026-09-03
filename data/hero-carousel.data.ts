@@ -1,6 +1,6 @@
 import type { HeroSlide } from "@/types/tourism";
 
-/*
+/**
  * HERO CAROUSEL DATA
  *
  * These are temporary development images only.

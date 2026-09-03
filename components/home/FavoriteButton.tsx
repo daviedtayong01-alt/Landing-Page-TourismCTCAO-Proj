@@ -1,8 +1,6 @@
 "use client";
 
-import {
-  Heart,
-} from "lucide-react";
+import { Heart } from "lucide-react";
 
 import {
   useCallback,
@@ -40,13 +38,7 @@ export function FavoriteButton({
   );
 
   function handleToggle() {
-    const nextValue =
-      !favorite;
-
-    setFavorite(
-      itemId,
-      nextValue,
-    );
+    setFavorite(itemId, !favorite);
   }
 
   return (
@@ -59,14 +51,20 @@ export function FavoriteButton({
       }
       aria-pressed={favorite}
       onClick={handleToggle}
-      className={className}
+      className={[
+        "focus-visible:outline-none",
+        "focus-visible:ring-2",
+        "focus-visible:ring-tourism-pink",
+        "focus-visible:ring-offset-2",
+        className,
+      ]
+        .filter(Boolean)
+        .join(" ")}
     >
       <Heart
         aria-hidden="true"
         className={`${iconClassName} ${
-          favorite
-            ? "fill-current"
-            : ""
+          favorite ? "fill-current" : ""
         }`}
       />
     </button>
