@@ -8,22 +8,24 @@ import {
 } from "lucide-react";
 import { useMemo, useState } from "react";
 
-import { PaginationControls } from "@/components/tourism/PaginationControls";
 import { TourismImage } from "@/components/home/TourismImage";
+import { PaginationControls } from "@/components/tourism/PaginationControls";
+import type { Locale } from "@/lib/i18n/config";
 import type { TourismEvent } from "@/types/tourism";
 
 const PAGE_SIZE = 2;
 
 interface EventsDirectoryProps {
   events: TourismEvent[];
+  locale: Locale;
 }
 
 export function EventsDirectory({
   events,
+  locale,
 }: EventsDirectoryProps) {
   const [query, setQuery] = useState("");
-  const [category, setCategory] =
-    useState("all");
+  const [category, setCategory] = useState("all");
   const [page, setPage] = useState(1);
 
   const categories = useMemo(
@@ -31,36 +33,45 @@ export function EventsDirectory({
       Array.from(
         new Set(
           events.map(
-            (event) => event.category,
+            (event) => event.category[locale],
           ),
         ),
       ).sort((first, second) =>
-        first.localeCompare(second),
+        first.localeCompare(second, locale),
       ),
-    [events],
+    [events, locale],
   );
 
   const filteredEvents = useMemo(() => {
     const normalizedQuery = query
       .trim()
-      .toLowerCase();
+      .toLocaleLowerCase(locale);
 
     return events.filter((event) => {
+      const localizedCategory =
+        event.category[locale];
+
       const matchesCategory =
         category === "all" ||
-        event.category === category;
+        localizedCategory === category;
+
+      const searchableText = [
+        event.name[locale],
+        localizedCategory,
+        event.location[locale],
+        event.dateLabel[locale],
+        event.description[locale],
+      ]
+        .join(" ")
+        .toLocaleLowerCase(locale);
 
       const matchesQuery =
         !normalizedQuery ||
-        `${event.name} ${event.category} ${event.location} ${event.description}`
-          .toLowerCase()
-          .includes(normalizedQuery);
+        searchableText.includes(normalizedQuery);
 
-      return (
-        matchesCategory && matchesQuery
-      );
+      return matchesCategory && matchesQuery;
     });
-  }, [category, events, query]);
+  }, [category, events, locale, query]);
 
   const totalPages = Math.max(
     1,
@@ -79,6 +90,10 @@ export function EventsDirectory({
     currentPage * PAGE_SIZE,
   );
 
+  const hasActiveFilters =
+    query.trim() !== "" ||
+    category !== "all";
+
   function resetPage() {
     setPage(1);
   }
@@ -89,20 +104,28 @@ export function EventsDirectory({
     resetPage();
   }
 
+  const filipino = locale === "fil";
+
   return (
     <section
-      aria-label="Events directory"
+      aria-label={
+        filipino
+          ? "Direktoryo ng mga kaganapan"
+          : "Events directory"
+      }
       className="bg-tourism-surface py-10 sm:py-14"
     >
       <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_200px]">
-        <label className="flex min-h-11 items-center gap-3 rounded-xl border border-tourism-border bg-white px-4 transition focus-within:border-tourism-pink focus-within:ring-2 focus-within:ring-tourism-pink/30 motion-reduce:transition-none">
+        <label className="flex min-h-11 min-w-0 items-center gap-3 rounded-xl border border-tourism-border bg-white px-4 transition-colors focus-within:border-tourism-pink focus-within:ring-2 focus-within:ring-tourism-pink/30 motion-reduce:transition-none">
           <Search
             aria-hidden="true"
             className="size-4 shrink-0 text-tourism-muted"
           />
 
           <span className="sr-only">
-            Search events and updates
+            {filipino
+              ? "Maghanap ng mga kaganapan at update"
+              : "Search events and updates"}
           </span>
 
           <input
@@ -112,13 +135,21 @@ export function EventsDirectory({
               setQuery(event.target.value);
               resetPage();
             }}
-            placeholder="Search events and updates"
+            placeholder={
+              filipino
+                ? "Maghanap ng mga kaganapan at update"
+                : "Search events and updates"
+            }
             className="min-w-0 flex-1 bg-transparent text-sm text-tourism-navy outline-none placeholder:text-tourism-soft"
           />
         </label>
 
         <select
-          aria-label="Filter events by category"
+          aria-label={
+            filipino
+              ? "I-filter ang mga kaganapan ayon sa kategorya"
+              : "Filter events by category"
+          }
           value={category}
           onChange={(event) => {
             setCategory(event.target.value);
@@ -127,39 +158,44 @@ export function EventsDirectory({
           className="min-h-11 rounded-xl border border-tourism-border bg-white px-3 text-sm font-semibold text-tourism-navy focus:border-tourism-pink focus:outline-none focus:ring-2 focus:ring-tourism-pink/30"
         >
           <option value="all">
-            All categories
+            {filipino
+              ? "Lahat ng kategorya"
+              : "All categories"}
           </option>
 
           {categories.map((item) => (
-            <option
-              key={item}
-              value={item}
-            >
+            <option key={item} value={item}>
               {item}
             </option>
           ))}
         </select>
       </div>
 
-      <div className="mt-5 flex items-center justify-between gap-4">
+      <div className="mt-5 flex flex-wrap items-center justify-between gap-3">
         <p
           aria-live="polite"
           className="text-sm text-tourism-muted"
         >
-          {filteredEvents.length} event
-          {filteredEvents.length === 1
-            ? ""
-            : "s"}{" "}
-          found
+          {filteredEvents.length}{" "}
+          {filipino
+            ? filteredEvents.length === 1
+              ? "kaganapan"
+              : "mga kaganapan"
+            : filteredEvents.length === 1
+              ? "event"
+              : "events"}{" "}
+          {filipino ? "ang nahanap" : "found"}
         </p>
 
-        {(query || category !== "all") && (
+        {hasActiveFilters && (
           <button
             type="button"
             onClick={clearFilters}
-            className="rounded-sm text-xs font-bold text-tourism-pink transition hover:text-tourism-pink-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-tourism-pink focus-visible:ring-offset-2 motion-reduce:transition-none"
+            className="rounded-sm text-xs font-bold text-tourism-pink transition-colors hover:text-tourism-pink-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-tourism-pink focus-visible:ring-offset-2 motion-reduce:transition-none"
           >
-            Clear filters
+            {filipino
+              ? "I-clear ang mga filter"
+              : "Clear filters"}
           </button>
         )}
       </div>
@@ -174,20 +210,24 @@ export function EventsDirectory({
               <div className="relative aspect-[1.8] overflow-hidden">
                 <TourismImage
                   src={event.image}
-                  alt={event.imageAlt}
+                  alt={event.imageAlt[locale]}
                   sizes="(max-width: 768px) 100vw, 50vw"
-                  fallbackLabel="Event photography unavailable"
-                  className="transition duration-500 group-hover:scale-105 motion-reduce:transition-none motion-reduce:group-hover:scale-100"
+                  fallbackLabel={
+                    filipino
+                      ? "Hindi available ang larawan ng kaganapan"
+                      : "Event photography unavailable"
+                  }
+                  className="transition-transform duration-500 group-hover:scale-105 motion-reduce:transition-none motion-reduce:group-hover:scale-100"
                 />
               </div>
 
               <div className="flex flex-1 flex-col p-5">
                 <p className="text-[9px] font-extrabold uppercase tracking-wide text-tourism-pink">
-                  {event.category}
+                  {event.category[locale]}
                 </p>
 
                 <h2 className="mt-2 text-xl font-extrabold leading-6 text-tourism-navy">
-                  {event.name}
+                  {event.name[locale]}
                 </h2>
 
                 <div className="mt-3 space-y-1.5 text-xs text-tourism-muted">
@@ -196,7 +236,10 @@ export function EventsDirectory({
                       aria-hidden="true"
                       className="size-3.5 shrink-0"
                     />
-                    {event.dateLabel}
+
+                    <span>
+                      {event.dateLabel[locale]}
+                    </span>
                   </p>
 
                   <p className="flex items-center gap-2">
@@ -204,19 +247,25 @@ export function EventsDirectory({
                       aria-hidden="true"
                       className="size-3.5 shrink-0"
                     />
-                    {event.location}
+
+                    <span>
+                      {event.location[locale]}
+                    </span>
                   </p>
                 </div>
 
                 <p className="mt-4 text-sm leading-6 text-tourism-muted">
-                  {event.description}
+                  {event.description[locale]}
                 </p>
 
                 <Link
                   href={`/events/${event.id}`}
-                  className="mt-auto inline-flex w-fit rounded-sm pt-5 text-xs font-extrabold text-tourism-navy transition hover:text-tourism-pink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-tourism-pink focus-visible:ring-offset-2 motion-reduce:transition-none"
+                  className="mt-auto inline-flex w-fit rounded-sm pt-5 text-xs font-extrabold text-tourism-navy transition-colors hover:text-tourism-pink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-tourism-pink focus-visible:ring-offset-2 motion-reduce:transition-none"
                 >
-                  Read more →
+                  {filipino
+                    ? "Magbasa pa"
+                    : "Read more"}{" "}
+                  →
                 </Link>
               </div>
             </article>
@@ -225,20 +274,25 @@ export function EventsDirectory({
       ) : (
         <div className="mt-6 rounded-2xl border border-dashed border-tourism-border bg-white p-10 text-center">
           <h2 className="text-lg font-extrabold text-tourism-navy">
-            No updates found
+            {filipino
+              ? "Walang nahanap na update"
+              : "No updates found"}
           </h2>
 
           <p className="mt-2 text-sm text-tourism-muted">
-            Try changing the search terms or
-            category.
+            {filipino
+              ? "Subukang baguhin ang mga termino ng paghahanap o ang kategorya."
+              : "Try changing the search terms or category."}
           </p>
 
           <button
             type="button"
             onClick={clearFilters}
-            className="mt-5 rounded-lg bg-tourism-pink px-4 py-2 text-xs font-bold text-white transition hover:bg-tourism-pink-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-tourism-pink focus-visible:ring-offset-2 motion-reduce:transition-none"
+            className="mt-5 rounded-lg bg-tourism-pink px-4 py-2 text-xs font-bold text-white transition-colors hover:bg-tourism-pink-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-tourism-pink focus-visible:ring-offset-2 motion-reduce:transition-none"
           >
-            Clear filters
+            {filipino
+              ? "I-clear ang mga filter"
+              : "Clear filters"}
           </button>
         </div>
       )}

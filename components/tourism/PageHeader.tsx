@@ -19,10 +19,7 @@ export function PageHeader({
     <section className="bg-tourism-navy py-12 text-white sm:py-16">
       <Container>
         <p className="flex items-center gap-3 text-[10px] font-extrabold uppercase tracking-[0.16em] text-white/75">
-          <span
-            aria-hidden="true"
-            className="h-px w-6 bg-tourism-pink"
-          />
+          <span aria-hidden="true" className="h-px w-6 bg-tourism-pink" />
           {eyebrow}
         </p>
 
@@ -34,11 +31,7 @@ export function PageHeader({
           {description}
         </p>
 
-        {children && (
-          <div className="mt-7">
-            {children}
-          </div>
-        )}
+        {children && <div className="mt-7">{children}</div>}
       </Container>
     </section>
   );

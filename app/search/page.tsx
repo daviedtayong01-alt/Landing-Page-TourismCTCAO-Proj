@@ -2,6 +2,8 @@ import { Container } from "@/components/layout/Container";
 import { PageShell } from "@/components/layout/PageShell";
 import { SearchForm } from "@/components/search/SearchForm";
 import { SearchResults } from "@/components/search/SearchResults";
+
+import { getLocale } from "@/lib/i18n/locale";
 import {
   normalizeSearchKind,
   searchTourismContent,
@@ -9,43 +11,126 @@ import {
 
 interface SearchPageProps {
   searchParams: Promise<{
-    q?: string | string[];
-    category?: string | string[];
-    favorites?: string | string[];
+    q?: string;
+    category?: string;
+    favorites?: string;
   }>;
-}
-
-function getSingleValue(value: string | string[] | undefined): string {
-  return typeof value === "string" ? value : "";
 }
 
 export default async function SearchPage({
   searchParams,
 }: SearchPageProps) {
-  const params =
-    await searchParams;
+  const locale = await getLocale();
+  const params = await searchParams;
 
-  const query = getSingleValue(params.q).trim();
-  const kind = normalizeSearchKind(getSingleValue(params.category));
-  const favoritesOnly = getSingleValue(params.favorites) === "true";
-  const results = searchTourismContent({ query, kind });
+  const query =
+    typeof params.q === "string"
+      ? params.q
+      : "";
+
+  const kind = normalizeSearchKind(
+    params.category ?? "",
+  );
+
+  const favoritesOnly =
+    params.favorites === "true";
+
+  const results = searchTourismContent({
+    query,
+    kind,
+    locale,
+  });
 
   return (
     <PageShell>
-      <main className="min-h-[calc(100vh-70px)] bg-tourism-surface py-10 sm:py-14">
-        <Container>
-          <p className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-tourism-pink">Global search</p>
-          <h1 className="mt-3 text-3xl font-black tracking-tight text-tourism-navy sm:text-4xl">Find tourism information</h1>
-          <p className="mt-3 max-w-2xl text-sm leading-6 text-tourism-muted">Search across listed destinations, DOT-accredited establishments, events, MICE venues, and configured transport routes.</p>
+      <main className="bg-tourism-surface pb-16 sm:pb-20">
+        <section className="bg-tourism-navy text-white">
+          <Container className="py-12 sm:py-16">
+            <div className="max-w-3xl">
+              <div className="flex items-center gap-3">
+                <span className="h-px w-5 bg-tourism-pink" />
 
-          <div className="mt-7"><SearchForm initialQuery={query} initialKind={kind} favoritesOnly={favoritesOnly} /></div>
-          <section className="mt-8" aria-labelledby="search-results-heading">
-            <div className="mb-5 flex flex-wrap items-baseline justify-between gap-2">
-              <h2 id="search-results-heading" className="text-xl font-extrabold text-tourism-navy">{favoritesOnly ? "Saved listings" : "Search results"}</h2>
-              <p className="text-sm text-tourism-muted">{results.length} result{results.length === 1 ? "" : "s"}{query ? ` for “${query}”` : ""}</p>
+                <p className="text-[10px] font-extrabold uppercase tracking-[0.2em] text-tourism-pink">
+                  {locale === "fil"
+                    ? "MAGHANAP"
+                    : "SEARCH"}
+                </p>
+              </div>
+
+              <h1 className="mt-3 text-3xl font-black tracking-tight sm:text-4xl lg:text-5xl">
+                {locale === "fil"
+                  ? "Hanapin sa Visit Koronadal"
+                  : "Search Visit Koronadal"}
+              </h1>
+
+              <p className="mt-4 max-w-2xl text-sm leading-7 text-white/75 sm:text-base">
+                {locale === "fil"
+                  ? "Maghanap ng mga destinasyon, establisimyento, kaganapan, MICE venue, impormasyon sa transportasyon, at iba pang tourism content."
+                  : "Find destinations, establishments, events, MICE venues, transport information, and other tourism content."}
+              </p>
             </div>
-            <SearchResults results={results} favoritesOnly={favoritesOnly} />
-          </section>
+          </Container>
+        </section>
+
+        <Container className="py-10 sm:py-14">
+          <div className="grid gap-8 lg:grid-cols-[240px_minmax(0,1fr)]">
+            <aside className="rounded-2xl border border-tourism-border bg-white p-5 sm:p-6 lg:self-start">
+              <p className="text-[10px] font-extrabold uppercase tracking-[0.18em] text-tourism-pink">
+                {locale === "fil"
+                  ? "MGA FILTER"
+                  : "SEARCH FILTERS"}
+              </p>
+
+              <h2 className="mt-2 text-lg font-extrabold text-tourism-navy">
+                {locale === "fil"
+                  ? "Pinuhin ang iyong paghahanap"
+                  : "Refine your search"}
+              </h2>
+
+              <p className="mt-2 text-xs leading-5 text-tourism-muted">
+                {locale === "fil"
+                  ? "Pumili ng uri ng tourism content o tingnan lamang ang mga naka-save na listahan."
+                  : "Choose a tourism content type or show only your saved listings."}
+              </p>
+
+              <div className="mt-5 rounded-xl bg-tourism-surface p-4">
+                <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-tourism-soft">
+                  {locale === "fil"
+                    ? "KASALUKUYANG ESTADO"
+                    : "CURRENT STATE"}
+                </p>
+
+                <p className="mt-2 text-sm font-bold text-tourism-navy">
+                  {favoritesOnly
+                    ? locale === "fil"
+                      ? "Mga naka-save lamang"
+                      : "Saved listings only"
+                    : query.trim()
+                      ? locale === "fil"
+                        ? `Mga resulta para sa "${query.trim()}"`
+                        : `Results for "${query.trim()}"`
+                      : locale === "fil"
+                        ? "Lahat ng tourism content"
+                        : "All tourism content"}
+                </p>
+              </div>
+            </aside>
+
+            <div className="space-y-6">
+              <SearchForm
+                initialQuery={query}
+                initialKind={kind}
+                favoritesOnly={favoritesOnly}
+                locale={locale}
+              />
+
+              <SearchResults
+                results={results}
+                favoritesOnly={favoritesOnly}
+                locale={locale}
+              />
+            </div>
+          </div>
         </Container>
       </main>
     </PageShell>

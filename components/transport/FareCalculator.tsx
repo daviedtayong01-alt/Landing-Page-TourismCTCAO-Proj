@@ -3,6 +3,8 @@
 import { Calculator } from "lucide-react";
 import { useState } from "react";
 
+import type { Locale } from "@/lib/i18n/config";
+
 import type {
   CommuterType,
   FareRule,
@@ -12,9 +14,12 @@ import type {
 interface FareCalculatorProps {
   routes: TransportRoute[];
   fareRules: FareRule[];
+  locale: Locale;
 }
 
-function formatPeso(amount: number): string {
+function formatPeso(
+  amount: number,
+): string {
   return new Intl.NumberFormat("en-PH", {
     style: "currency",
     currency: "PHP",
@@ -34,10 +39,12 @@ function isCommuterType(
 export function FareCalculator({
   routes,
   fareRules,
+  locale,
 }: FareCalculatorProps) {
-  const [routeId, setRouteId] = useState(
-    routes[0]?.id ?? "",
-  );
+  const filipino = locale === "fil";
+
+  const [routeId, setRouteId] =
+    useState(routes[0]?.id ?? "");
 
   const [commuterType, setCommuterType] =
     useState<CommuterType>("regular");
@@ -72,12 +79,15 @@ export function FareCalculator({
               id="fare-calculator-heading"
               className="text-xl font-extrabold text-tourism-navy"
             >
-              Fare lookup
+              {filipino
+                ? "Paghahanap ng Pamasahe"
+                : "Fare lookup"}
             </h2>
 
             <p className="mt-1 text-sm leading-5 text-tourism-muted">
-              Transport fare routes have not
-              been configured yet.
+              {filipino
+                ? "Hindi pa na-configure ang mga ruta ng pamasahe sa transportasyon."
+                : "Transport fare routes have not been configured yet."}
             </p>
           </div>
         </div>
@@ -104,20 +114,22 @@ export function FareCalculator({
             id="fare-calculator-heading"
             className="text-xl font-extrabold text-tourism-navy"
           >
-            Fare lookup
+            {filipino
+              ? "Paghahanap ng Pamasahe"
+              : "Fare lookup"}
           </h2>
 
           <p className="mt-1 text-sm leading-5 text-tourism-muted">
-            Choose a configured route and
-            commuter type to view the
-            development fare.
+            {filipino
+              ? "Pumili ng naka-configure na ruta at uri ng commuter upang makita ang development fare."
+              : "Choose a configured route and commuter type to view the development fare."}
           </p>
         </div>
       </div>
 
       <div className="mt-6 grid gap-4 sm:grid-cols-2">
         <label className="text-xs font-bold text-tourism-navy">
-          Route
+          {filipino ? "Ruta" : "Route"}
 
           <select
             value={routeId}
@@ -131,19 +143,22 @@ export function FareCalculator({
                 key={route.id}
                 value={route.id}
               >
-                {route.routeLabel}
+                {route.routeLabel[locale]}
               </option>
             ))}
           </select>
         </label>
 
         <label className="text-xs font-bold text-tourism-navy">
-          Commuter type
+          {filipino
+            ? "Uri ng Commuter"
+            : "Commuter type"}
 
           <select
             value={commuterType}
             onChange={(event) => {
-              const value = event.target.value;
+              const value =
+                event.target.value;
 
               if (isCommuterType(value)) {
                 setCommuterType(value);
@@ -152,11 +167,15 @@ export function FareCalculator({
             className="mt-2 min-h-11 w-full rounded-lg border border-tourism-border bg-white px-3 text-sm font-medium text-tourism-navy focus:border-tourism-pink focus:outline-none focus:ring-2 focus:ring-tourism-pink/30"
           >
             <option value="regular">
-              Regular commuter
+              {filipino
+                ? "Regular na Commuter"
+                : "Regular commuter"}
             </option>
 
             <option value="discounted">
-              Student / Senior / PWD
+              {filipino
+                ? "Estudyante / Senior / PWD"
+                : "Student / Senior / PWD"}
             </option>
           </select>
         </label>
@@ -168,7 +187,9 @@ export function FareCalculator({
           className="mt-6 rounded-xl bg-tourism-surface p-5"
         >
           <p className="text-[10px] font-extrabold uppercase tracking-wide text-tourism-muted">
-            Development fare
+            {filipino
+              ? "Development fare"
+              : "Development fare"}
           </p>
 
           <p className="mt-2 text-3xl font-black tracking-tight text-tourism-navy">
@@ -176,17 +197,17 @@ export function FareCalculator({
           </p>
 
           <p className="mt-3 text-sm text-tourism-muted">
-            {selectedRoute.origin} to{" "}
-            {selectedRoute.destination}
+            {selectedRoute.origin[locale]}{" "}
+            {filipino ? "papunta sa" : "to"}{" "}
+            {selectedRoute.destination[
+              locale
+            ]}
           </p>
 
           <p className="mt-1 text-xs text-tourism-pink">
-            Development data only. This fare
-            is not presented as an official
-            current regulated fare. Verify
-            the applicable fare with the
-            relevant city office or transport
-            operator before travel.
+            {filipino
+              ? "Development data lamang. Ang pamasahe na ito ay hindi ipinapakitang kasalukuyang opisyal na reguladong pamasahe. Tiyakin ang naaangkop na pamasahe sa kaukulang tanggapan ng lungsod o sa transport operator bago bumiyahe."
+              : "Development data only. This fare is not presented as an official current regulated fare. Verify the applicable fare with the relevant city office or transport operator before travel."}
           </p>
         </div>
       ) : (
@@ -194,8 +215,9 @@ export function FareCalculator({
           aria-live="polite"
           className="mt-6 rounded-xl bg-tourism-surface p-5 text-sm text-tourism-muted"
         >
-          No configured fare is available
-          for this selection.
+          {filipino
+            ? "Walang naka-configure na pamasahe para sa napiling kombinasyon."
+            : "No configured fare is available for this selection."}
         </p>
       )}
     </section>

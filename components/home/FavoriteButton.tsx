@@ -2,16 +2,9 @@
 
 import { Heart } from "lucide-react";
 
-import {
-  useCallback,
-  useSyncExternalStore,
-} from "react";
+import { useCallback, useSyncExternalStore } from "react";
 
-import {
-  isFavorite,
-  setFavorite,
-  subscribeToFavorites,
-} from "@/lib/favorites";
+import { isFavorite, setFavorite, subscribeToFavorites } from "@/lib/favorites";
 
 interface FavoriteButtonProps {
   itemId: string;
@@ -26,10 +19,7 @@ export function FavoriteButton({
   className = "",
   iconClassName = "size-4",
 }: FavoriteButtonProps) {
-  const getSnapshot = useCallback(
-    () => isFavorite(itemId),
-    [itemId],
-  );
+  const getSnapshot = useCallback(() => isFavorite(itemId), [itemId]);
 
   const favorite = useSyncExternalStore(
     subscribeToFavorites,
@@ -63,9 +53,7 @@ export function FavoriteButton({
     >
       <Heart
         aria-hidden="true"
-        className={`${iconClassName} ${
-          favorite ? "fill-current" : ""
-        }`}
+        className={`${iconClassName} ${favorite ? "fill-current" : ""}`}
       />
     </button>
   );

@@ -3,8 +3,7 @@
 import Image, { type ImageProps } from "next/image";
 import { useState } from "react";
 
-interface TourismImageProps
-  extends Omit<ImageProps, "src" | "alt" | "fill"> {
+interface TourismImageProps extends Omit<ImageProps, "src" | "alt" | "fill"> {
   src: string | null;
   alt: string;
   className?: string;

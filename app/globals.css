@@ -1,9 +1,6 @@
 @import "tailwindcss";
-
 @import "@heroui/styles";
-
 @import "tw-animate-css";
-
 @import "shadcn/tailwind.css";
 
 @custom-variant dark (&:is(.dark *));
@@ -30,11 +27,6 @@
 
   WHITE
   #FFFFFF
-
-  IMPORTANT:
-  These semantic variables are intentionally centralized.
-  Components should use the theme tokens rather than inventing
-  unrelated colors.
 */
 
 :root {
@@ -63,11 +55,29 @@
 }
 
 @theme inline {
+  /*
+    ==========================================================
+    TYPOGRAPHY
+    ==========================================================
+  */
+
+  --font-sans: var(--font-poppins);
+  --font-mono: "Courier New", monospace;
+
+  /*
+    ==========================================================
+    STANDARD COLORS
+    ==========================================================
+  */
+
   --color-background: var(--background);
   --color-foreground: var(--foreground);
 
-  --font-sans: Arial, Helvetica, sans-serif;
-  --font-mono: "Courier New", monospace;
+  /*
+    ==========================================================
+    TOURISM COLORS
+    ==========================================================
+  */
 
   --color-tourism-navy: var(--tourism-navy);
   --color-tourism-navy-dark: var(--tourism-navy-dark);
@@ -80,8 +90,13 @@
 
   --color-tourism-muted: var(--tourism-muted);
   --color-tourism-soft: var(--tourism-soft);
-
   --color-tourism-border: var(--tourism-border);
+
+  /*
+    ==========================================================
+    COMPONENT TOKENS
+    ==========================================================
+  */
 
   --color-primary: var(--tourism-navy);
   --color-primary-foreground: #ffffff;
@@ -94,7 +109,14 @@
 
   --color-border: var(--tourism-border);
   --color-input: var(--tourism-border);
+
   --color-ring: var(--tourism-pink);
+
+  /*
+    ==========================================================
+    RADII
+    ==========================================================
+  */
 
   --radius-sm: var(--radius-sm);
   --radius-md: var(--radius-md);
@@ -118,8 +140,8 @@ body {
   overflow-x: hidden;
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
 }
+
 @layer base {
   * {
     @apply border-border outline-ring/50;

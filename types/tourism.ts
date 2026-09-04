@@ -1,175 +1,160 @@
+export interface LocalizedText {
+  en: string;
+  fil: string;
+}
+
 export interface HeroSlide {
   id: string;
-
-  eyebrow: string;
-
-  title: string;
-
-  description: string;
-
+  eyebrow: LocalizedText;
+  title: LocalizedText;
+  description: LocalizedText;
   backgroundImage: string;
-
-  backgroundAlt: string;
-
+  backgroundAlt: LocalizedText;
   backgroundPosition?: string;
-
   cta: {
-    label: string;
+    label: LocalizedText;
     href: string;
   };
 }
 
 export interface Establishment {
   id: string;
-
-  category: string;
-
-  name: string;
-
-  location: string;
-
+  category: LocalizedText;
+  name: LocalizedText;
+  location: LocalizedText;
   phone?: string;
-
-  description: string;
-
+  description: LocalizedText;
   image: string;
-
-  imageAlt: string;
-
+  imageAlt: LocalizedText;
   rating: number;
 
-  /*
+  /**
    * Existing business-directory pages depend on this field.
    * Do not remove or rename it without updating those routes.
+   *
+   * NOTE:
+   * Accreditation values must be verified against an
+   * authorized source before being presented as official.
    */
-  accreditationStatus: string;
+  accreditationStatus: LocalizedText;
 
   accredited: boolean;
 
   ecoFriendly?: boolean;
 
-  amenities?: string[];
+  amenities?: LocalizedText[];
 }
 
 export interface Destination {
   id: string;
-
-  category: string;
-
-  name: string;
-
-  location: string;
-
-  description: string;
-
+  category: LocalizedText;
+  name: LocalizedText;
+  location: LocalizedText;
+  description: LocalizedText;
   image: string;
-
-  imageAlt: string;
-
+  imageAlt: LocalizedText;
   rating: number;
-
-  distance: string;
-
-  travelGuidance?: string;
-
-  visitorGuidelines?: string[];
+  distance: LocalizedText;
+  travelGuidance?: LocalizedText;
+  visitorGuidelines?: LocalizedText[];
 }
 
 export interface NewsItem {
   id: string;
-
-  category: string;
-
-  date: string;
-
-  title: string;
-
-  description: string;
-
+  category: LocalizedText;
+  date: LocalizedText;
+  title: LocalizedText;
+  description: LocalizedText;
   image: string;
-
-  imageAlt: string;
+  imageAlt: LocalizedText;
 }
 
 export interface TourismEvent {
   id: string;
 
-  /*
+  /**
    * Existing search page contract.
+   *
+   * These property names are consumed by the current
+   * search implementation and should not be renamed
+   * without updating that contract.
    */
-  name: string;
-
-  category: string;
-
-  location: string;
-
-  dateLabel: string;
-
-  description: string;
-
+  name: LocalizedText;
+  category: LocalizedText;
+  location: LocalizedText;
+  dateLabel: LocalizedText;
+  description: LocalizedText;
   image: string;
-
-  imageAlt: string;
+  imageAlt: LocalizedText;
 }
 
 export interface MiceVenue {
   id: string;
+  name: LocalizedText;
+  location: LocalizedText;
 
-  name: string;
+  /**
+   * Human-readable capacity for display.
+   *
+   * Example:
+   * "5,000 seats"
+   */
+  capacity: LocalizedText;
 
-  location: string;
-
-  capacity: string;
-
+  /**
+   * Numeric capacity used for sorting and filtering.
+   */
   capacityValue: number;
 
-  venueType: string;
+  venueType: LocalizedText;
 
+  /**
+   * Accreditation must be verified against an
+   * authorized source before being presented as official.
+   */
   accredited?: boolean;
 
   image: string;
-
-  imageAlt: string;
-
-  tags: string[];
+  imageAlt: LocalizedText;
+  tags: LocalizedText[];
 }
 
-export type CommuterType =
-  | "regular"
-  | "discounted";
+export type CommuterType = "regular" | "discounted";
 
 export interface TransportRoute {
   id: string;
-
-  origin: string;
-
-  destination: string;
-
-  routeLabel: string;
-
-  guidance: string;
+  origin: LocalizedText;
+  destination: LocalizedText;
+  routeLabel: LocalizedText;
+  guidance: LocalizedText;
 }
 
+/**
+ * Development fare configuration.
+ *
+ * These values are configured lookup data, not proof of
+ * an official current regulated fare.
+ */
 export interface FareRule {
   routeId: string;
-
   commuterType: CommuterType;
-
   amount: number;
-
-  statusLabel: string;
+  statusLabel: LocalizedText;
 }
 
 export interface ExperienceItem {
   id: string;
 
-  duration: string;
+  /**
+   * Display duration for the experience item.
+   *
+   * The current project does not yet define this as a
+   * machine-readable media duration.
+   */
+  duration: LocalizedText;
 
-  title: string;
-
-  description: string;
-
+  title: LocalizedText;
+  description: LocalizedText;
   image: string;
-
-  imageAlt: string;
+  imageAlt: LocalizedText;
 }

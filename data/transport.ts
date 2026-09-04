@@ -8,12 +8,12 @@ import type {
  * DEVELOPMENT FARE CONFIGURATION
  * ============================================================
  *
- * These are explicitly development configuration values carried
- * over from the existing fare matrix.
+ * These are explicitly development configuration values
+ * carried over from the existing fare matrix.
  *
- * They must be replaced with a validated city resolution or
- * official publication before they are presented as official
- * current fares.
+ * They must be replaced with a validated city resolution
+ * or official publication before they are presented as
+ * official current fares.
  *
  * Do not treat these values as authoritative.
  */
@@ -22,76 +22,94 @@ export const transportRoutes: TransportRoute[] = [
   {
     id: "market-city-hall",
 
-    origin: "City Public Market",
+    origin: {
+      en: "City Public Market",
+      fil: "Pampublikong Palengke ng Lungsod",
+    },
 
-    destination:
-      "Rizal Park / City Hall",
+    destination: {
+      en: "Rizal Park / City Hall",
+      fil: "Rizal Park / City Hall",
+    },
 
-    routeLabel:
-      "Market to City Hall",
+    routeLabel: {
+      en: "Market to City Hall",
+      fil: "Palengke papuntang City Hall",
+    },
 
-    guidance:
-      "A central city connection between the public market and City Hall area.",
+    guidance: {
+      en: "A central city connection between the public market and City Hall area.",
+      fil: "Isang pangunahing koneksyon sa lungsod sa pagitan ng pampublikong palengke at ng lugar ng City Hall.",
+    },
   },
 
   {
     id: "center-paraiso-verde",
 
-    origin: "Koronadal Center",
+    origin: {
+      en: "Koronadal Center",
+      fil: "Sentro ng Koronadal",
+    },
 
-    destination:
-      "The Paraiso Verde Resort",
+    destination: {
+      en: "The Paraiso Verde Resort",
+      fil: "The Paraiso Verde Resort",
+    },
 
-    routeLabel:
-      "Center to Paraiso Verde",
+    routeLabel: {
+      en: "Center to Paraiso Verde",
+      fil: "Sentro papuntang Paraiso Verde",
+    },
 
-    guidance:
-      "A visitor route from the central area toward the Paraiso Verde listing.",
+    guidance: {
+      en: "A visitor route from the central area toward the Paraiso Verde listing.",
+      fil: "Isang ruta para sa mga bisita mula sa sentrong lugar patungo sa The Paraiso Verde Resort.",
+    },
   },
 ];
 
 export const fareRules: FareRule[] = [
   {
     routeId: "market-city-hall",
-
     commuterType: "regular",
-
     amount: 15,
 
-    statusLabel:
-      "Development configuration",
+    statusLabel: {
+      en: "Development configuration",
+      fil: "Development configuration",
+    },
   },
 
   {
     routeId: "market-city-hall",
-
     commuterType: "discounted",
-
     amount: 12,
 
-    statusLabel:
-      "Development configuration",
+    statusLabel: {
+      en: "Development configuration",
+      fil: "Development configuration",
+    },
   },
 
   {
     routeId: "center-paraiso-verde",
-
     commuterType: "regular",
-
     amount: 25,
 
-    statusLabel:
-      "Development configuration",
+    statusLabel: {
+      en: "Development configuration",
+      fil: "Development configuration",
+    },
   },
 
   {
     routeId: "center-paraiso-verde",
-
     commuterType: "discounted",
-
     amount: 20,
 
-    statusLabel:
-      "Development configuration",
+    statusLabel: {
+      en: "Development configuration",
+      fil: "Development configuration",
+    },
   },
 ];

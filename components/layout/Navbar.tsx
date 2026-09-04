@@ -2,198 +2,170 @@
 
 import Link from "next/link";
 import { Heart, Search } from "lucide-react";
-import { useSyncExternalStore } from "react";
+import { useMemo, useSyncExternalStore } from "react";
+
+import {
+  getTranslations,
+  type Locale,
+} from "@/lib/i18n";
+
+import { defaultLocale } from "@/lib/i18n/config";
 
 import {
   getFavoriteCount,
   subscribeToFavorites,
 } from "@/lib/favorites";
 
-import { Container } from "./Container";
+import { LanguageSwitcher } from "./LanguageSwitcher";
 import { MobileMenu } from "./MobileMenu";
 
-/**
- * Primary navigation configuration.
- *
- * IMPORTANT:
- * `id` represents the identity of the navigation item.
- * `href` represents where the item navigates.
- *
- * These are intentionally separate because multiple navigation items
- * can currently point to the same route.
- *
- * Example:
- *   DOT Listed -> /business-directory
- *   Stay & Eat  -> /business-directory
- *
- * Using `href` as the React key would therefore create duplicate keys.
- */
+interface NavbarProps {
+  locale?: Locale;
+}
+
 const navigation = [
   {
     id: "home",
-    label: "Home",
     href: "/",
   },
   {
     id: "destinations",
-    label: "Destinations",
     href: "/destinations",
   },
   {
     id: "dot-listed",
-    label: "DOT Listed",
-    href: "/business-directory",
-  },
-  {
-    id: "stay-eat",
-    label: "Stay & Eat",
     href: "/business-directory",
   },
   {
     id: "transport",
-    label: "Transport",
     href: "/transport",
   },
   {
     id: "mice",
-    label: "MICE",
     href: "/mice",
   },
   {
     id: "events",
-    label: "Events",
     href: "/events",
   },
-  {
-    id: "reports",
-    label: "Reports",
-    href: "/reports",
-  },
-];
+] as const;
 
-export function Navbar() {
+export function Navbar({
+  locale: serverLocale = defaultLocale,
+}: NavbarProps) {
+  const locale = serverLocale;
+
   const favoriteCount = useSyncExternalStore(
     subscribeToFavorites,
     getFavoriteCount,
     () => 0,
   );
 
+  const translations = useMemo(
+    () => getTranslations(locale),
+    [locale],
+  );
+
   return (
-    <header className="absolute inset-x-0 top-0 z-50">
-      <Container>
-        <nav
-          aria-label="Primary navigation"
-          className="flex h-[70px] items-center justify-between gap-4"
+    <nav
+      aria-label={translations.accessibility.primaryNavigation}
+      className="absolute inset-x-0 top-0 z-50"
+    >
+      <div className="mx-auto flex h-[70px] w-full max-w-[1440px] items-center justify-between px-5 sm:px-8 lg:px-10 xl:px-12">
+        {/* Brand */}
+        <Link
+          href="/"
+          aria-label="Visit Koronadal"
+          className="inline-flex min-h-10 items-center gap-2.5 rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-tourism-pink focus-visible:ring-offset-2 focus-visible:ring-offset-tourism-navy"
         >
-          {/* =========================================================
-              BRAND
-              ========================================================= */}
-
-          <Link
-            href="/"
-            aria-label="City of Koronadal tourism home"
-            className="flex shrink-0 items-center gap-2.5"
+          <span
+            aria-hidden="true"
+            className="flex size-9 shrink-0 items-center justify-center rounded-full bg-tourism-pink text-sm font-black text-white"
           >
-            {/* CK = City of Koronadal */}
-            <span
-              aria-hidden="true"
-              className="flex size-9 items-center justify-center rounded-full bg-white text-[10px] font-black text-tourism-navy shadow-sm"
-            >
-              CK
+            K
+          </span>
+
+          <span className="leading-none">
+            <span className="block text-[13px] font-black tracking-tight text-white">
+              VISIT KORONADAL
             </span>
 
-            <span className="hidden leading-none sm:block">
-              <span className="block text-[13px] font-black tracking-tight text-white">
-                VISIT KORONADAL
-              </span>
-
-              <span className="mt-1 block text-[7px] font-bold uppercase tracking-[0.18em] text-white/75">
-                CITY GOVERNMENT PORTAL
-              </span>
+            <span className="mt-1 block text-[9px] font-bold uppercase tracking-[0.18em] text-white/55">
+              CITY GOVERNMENT PORTAL
             </span>
-          </Link>
+          </span>
+        </Link>
 
-          {/* =========================================================
-              DESKTOP NAVIGATION
-
-              DEBUG: NAVIGATION_KEYS
-
-              Each item uses its own stable `id` as the React key.
-              Do NOT use `item.href` here because DOT Listed and
-              Stay & Eat currently share /business-directory.
-              ========================================================= */}
-
-          <div className="hidden items-center gap-5 xl:flex">
+        {/* Desktop */}
+        <div className="hidden items-center gap-5 xl:flex">
+          <div className="flex items-center gap-6 text-[11px] font-bold text-white/70">
             {navigation.map((item) => (
               <Link
                 key={item.id}
                 href={item.href}
-                className="text-[10px] font-bold text-white/90 transition hover:text-white"
+                className="rounded-sm transition-colors motion-reduce:transition-none hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-tourism-pink focus-visible:ring-offset-2 focus-visible:ring-offset-tourism-navy"
               >
-                {item.label}
+                {
+                  translations.nav[
+                    item.id === "dot-listed"
+                      ? "dotListed"
+                      : item.id
+                  ]
+                }
               </Link>
             ))}
           </div>
 
-          {/* =========================================================
-              RIGHT ACTIONS
-              ========================================================= */}
-
-          <div className="hidden items-center gap-3 lg:flex">
-            <Link
-              href="/search"
-              aria-label="Search tourism listings"
-              className="flex size-8 items-center justify-center rounded-full text-white transition hover:bg-white/10"
-            >
-              <Search className="size-4" />
-            </Link>
-
-            <Link
-              href="/search?favorites=true"
-              aria-label={`Favorites: ${favoriteCount}`}
-              className="flex items-center gap-1 rounded-full px-1 text-white transition hover:bg-white/10"
-            >
-              <Heart className="size-3.5" />
-
-              <span className="flex min-w-4 items-center justify-center rounded-full bg-tourism-pink px-1 py-0.5 text-[7px] font-black text-white">
-                {favoriteCount}
-              </span>
-            </Link>
-
-            <span className="text-[9px] font-bold text-white">
-              EN
-            </span>
-
-            <span
+          {/* Search */}
+          <Link
+            href="/search"
+            aria-label={`${translations.common.search} Visit Koronadal`}
+            className="flex size-9 items-center justify-center rounded-full text-white/70 transition-colors motion-reduce:transition-none hover:bg-white/10 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-tourism-pink focus-visible:ring-offset-2 focus-visible:ring-offset-tourism-navy"
+          >
+            <Search
               aria-hidden="true"
-              className="text-[9px] text-white/40"
-            >
-              /
-            </span>
+              className="size-4"
+            />
+          </Link>
 
-            <span className="text-[9px] font-semibold text-white/65">
-              FIL
-            </span>
+          {/* Favorites */}
+          <Link
+            href="/search?favorites=true"
+            aria-label={`${translations.nav.favorites}${
+              favoriteCount > 0
+                ? `, ${favoriteCount}`
+                : ""
+            }`}
+            className="relative flex size-9 items-center justify-center rounded-full text-white/70 transition-colors motion-reduce:transition-none hover:bg-white/10 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-tourism-pink focus-visible:ring-offset-2 focus-visible:ring-offset-tourism-navy"
+          >
+            <Heart
+              aria-hidden="true"
+              className="size-4"
+            />
 
-            <Link
-              href="/reports"
-              className="rounded-full bg-tourism-pink px-4 py-2.5 text-[9px] font-extrabold text-white transition hover:bg-tourism-pink-dark"
-            >
-              Report an Update
-            </Link>
-          </div>
+            {favoriteCount > 0 && (
+              <span
+                aria-hidden="true"
+                className="absolute -right-0.5 -top-0.5 flex min-w-4 items-center justify-center rounded-full bg-tourism-pink px-1 text-[8px] font-black leading-4 text-white"
+              >
+                {favoriteCount > 99
+                  ? "99+"
+                  : favoriteCount}
+              </span>
+            )}
+          </Link>
 
-          {/* =========================================================
-              MOBILE NAVIGATION
+          <LanguageSwitcher locale={locale} />
+        </div>
 
-              MobileMenu remains responsible for the mobile
-              navigation UI. The favorite count is passed through
-              exactly as before.
-              ========================================================= */}
-
-          <MobileMenu favoriteCount={favoriteCount} />
-        </nav>
-      </Container>
-    </header>
+        {/* Mobile */}
+        <div className="xl:hidden">
+          <MobileMenu
+            favoriteCount={favoriteCount}
+            locale={locale}
+          />
+        </div>
+      </div>
+    </nav>
   );
 }

@@ -1,177 +1,437 @@
 "use client";
 
 import Link from "next/link";
-
 import {
   Heart,
   Menu,
   Search,
   X,
 } from "lucide-react";
-
 import {
   useEffect,
+  useId,
   useRef,
   useState,
 } from "react";
 
-const navigation = [
-  {
-    label: "Home",
-    href: "/",
-  },
-  {
-    label: "Destinations",
-    href: "/destinations",
-  },
-  {
-    label: "DOT Listed",
-    href: "/business-directory",
-  },
-  {
-    label: "Stay & Eat",
-    href: "/business-directory",
-  },
-  {
-    label: "Transport",
-    href: "/transport",
-  },
-  {
-    label: "MICE",
-    href: "/mice",
-  },
-  {
-    label: "Events",
-    href: "/events",
-  },
-  {
-    label: "Reports",
-    href: "/reports",
-  },
-];
+import {
+  getTranslations,
+  type Locale,
+} from "@/lib/i18n";
+
+import { LanguageSwitcher } from "./LanguageSwitcher";
 
 interface MobileMenuProps {
   favoriteCount: number;
+  locale: Locale;
 }
+
+const navigation = [
+  {
+    id: "home",
+    href: "/",
+  },
+  {
+    id: "destinations",
+    href: "/destinations",
+  },
+  {
+    id: "dot-listed",
+    href: "/business-directory",
+  },
+  {
+    id: "transport",
+    href: "/transport",
+  },
+  {
+    id: "mice",
+    href: "/mice",
+  },
+  {
+    id: "events",
+    href: "/events",
+  },
+  {
+    id: "reports",
+    href: "/reports",
+  },
+] as const;
 
 export function MobileMenu({
   favoriteCount,
+  locale,
 }: MobileMenuProps) {
-  const [open, setOpen] =
-    useState(false);
+  const [isOpen, setIsOpen] = useState(false);
 
   const menuButtonRef =
     useRef<HTMLButtonElement>(null);
 
-  const firstMenuLinkRef =
+  const firstLinkRef =
     useRef<HTMLAnchorElement>(null);
 
-  const wasOpenRef =
-    useRef(false);
+  const panelRef =
+    useRef<HTMLDivElement>(null);
 
+  const menuId = useId();
+
+  const translations =
+    getTranslations(locale);
+
+  const navigationLabels = {
+    home: translations.nav.home,
+    destinations: translations.nav.destinations,
+    "dot-listed":
+      translations.nav.dotListed,
+    transport: translations.nav.transport,
+    mice: translations.nav.mice,
+    events: translations.nav.events,
+    reports: translations.nav.reports,
+  } as const;
+
+  const closeMenu = () => {
+    setIsOpen(false);
+  };
+
+  /*
+   * Keep document scrolling locked while the menu is open.
+   */
   useEffect(() => {
-    if (open) {
-      firstMenuLinkRef.current?.focus();
-    } else if (wasOpenRef.current) {
-      menuButtonRef.current?.focus();
+    if (!isOpen) {
+      return;
     }
 
-    wasOpenRef.current = open;
-  }, [open]);
+    const previousOverflow =
+      document.body.style.overflow;
+
+    document.body.style.overflow = "hidden";
+
+    return () => {
+      document.body.style.overflow =
+        previousOverflow;
+    };
+  }, [isOpen]);
+
+  /*
+   * Move focus into the menu after it opens.
+   */
+  useEffect(() => {
+    if (!isOpen) {
+      return;
+    }
+
+    const frame = window.requestAnimationFrame(
+      () => {
+        firstLinkRef.current?.focus();
+      },
+    );
+
+    return () => {
+      window.cancelAnimationFrame(frame);
+    };
+  }, [isOpen]);
+
+  /*
+   * Return focus to the menu button after closing.
+   */
+  useEffect(() => {
+    if (isOpen) {
+      return;
+    }
+
+    const frame = window.requestAnimationFrame(
+      () => {
+        menuButtonRef.current?.focus();
+      },
+    );
+
+    return () => {
+      window.cancelAnimationFrame(frame);
+    };
+  }, [isOpen]);
+
+  /*
+   * Escape closes the menu.
+   */
+  useEffect(() => {
+    if (!isOpen) {
+      return;
+    }
+
+    function handleKeyDown(
+      event: KeyboardEvent,
+    ) {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        closeMenu();
+        return;
+      }
+
+      if (event.key !== "Tab") {
+        return;
+      }
+
+      const panel = panelRef.current;
+
+      if (!panel) {
+        return;
+      }
+
+      const focusableElements =
+        panel.querySelectorAll<HTMLElement>(
+          'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])',
+        );
+
+      if (focusableElements.length === 0) {
+        return;
+      }
+
+      const first =
+        focusableElements[0];
+
+      const last =
+        focusableElements[
+          focusableElements.length - 1
+        ];
+
+      if (
+        event.shiftKey &&
+        document.activeElement === first
+      ) {
+        event.preventDefault();
+        last.focus();
+        return;
+      }
+
+      if (
+        !event.shiftKey &&
+        document.activeElement === last
+      ) {
+        event.preventDefault();
+        first.focus();
+      }
+    }
+
+    document.addEventListener(
+      "keydown",
+      handleKeyDown,
+    );
+
+    return () => {
+      document.removeEventListener(
+        "keydown",
+        handleKeyDown,
+      );
+    };
+  }, [isOpen]);
+
+  /*
+   * Clicking outside the panel closes it.
+   */
+  useEffect(() => {
+    if (!isOpen) {
+      return;
+    }
+
+    function handlePointerDown(
+      event: PointerEvent,
+    ) {
+      const target = event.target;
+
+      if (!(target instanceof Node)) {
+        return;
+      }
+
+      if (
+        panelRef.current?.contains(target) ||
+        menuButtonRef.current?.contains(target)
+      ) {
+        return;
+      }
+
+      closeMenu();
+    }
+
+    document.addEventListener(
+      "pointerdown",
+      handlePointerDown,
+    );
+
+    return () => {
+      document.removeEventListener(
+        "pointerdown",
+        handlePointerDown,
+      );
+    };
+  }, [isOpen]);
+
+  /*
+   * Prevent the menu from remaining open when the
+   * viewport transitions into the desktop layout.
+   */
+  useEffect(() => {
+    const mediaQuery = window.matchMedia(
+      "(min-width: 1280px)",
+    );
+
+    function handleMediaChange(
+      event: MediaQueryListEvent,
+    ) {
+      if (event.matches) {
+        setIsOpen(false);
+      }
+    }
+
+    mediaQuery.addEventListener(
+      "change",
+      handleMediaChange,
+    );
+
+    return () => {
+      mediaQuery.removeEventListener(
+        "change",
+        handleMediaChange,
+      );
+    };
+  }, []);
+
+  function handleNavigationClick() {
+    closeMenu();
+  }
 
   return (
-    <div className="relative lg:hidden">
+    <div className="relative">
       <button
         ref={menuButtonRef}
         type="button"
+        aria-expanded={isOpen}
+        aria-controls={menuId}
         aria-label={
-          open
-            ? "Close navigation menu"
-            : "Open navigation menu"
+          isOpen
+            ? translations.common.close
+            : translations.common.open
         }
-        aria-expanded={open}
         onClick={() =>
-          setOpen(
-            (current) =>
-              !current,
-          )
+          setIsOpen((previous) => !previous)
         }
-        className="flex size-10 items-center justify-center rounded-full border border-white/25 bg-black/15 text-white backdrop-blur-sm transition hover:bg-white/10"
+        className="flex size-10 items-center justify-center rounded-full border border-white/15 bg-white/5 text-white transition-colors motion-reduce:transition-none hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-tourism-pink focus-visible:ring-offset-2 focus-visible:ring-offset-tourism-navy"
       >
-        {open ? (
-          <X className="size-5" />
+        {isOpen ? (
+          <X
+            aria-hidden="true"
+            className="size-5"
+          />
         ) : (
-          <Menu className="size-5" />
+          <Menu
+            aria-hidden="true"
+            className="size-5"
+          />
         )}
       </button>
 
-      {open && (
+      {isOpen && (
         <div
-          id="mobile-navigation-panel"
-          onKeyDown={(event) => {
-            if (event.key === "Escape") {
-              event.preventDefault();
-              setOpen(false);
-            }
-          }}
-          className="absolute right-0 top-[calc(100%+10px)] w-[min(88vw,340px)] overflow-hidden rounded-2xl border border-white/10 bg-tourism-navy/95 p-4 shadow-2xl backdrop-blur-xl"
+          ref={panelRef}
+          id={menuId}
+          className="absolute right-0 top-[52px] w-[min(90vw,360px)] overflow-hidden rounded-2xl border border-tourism-border bg-white shadow-[0_18px_55px_rgba(12,44,72,0.18)]"
         >
-          <nav
-            aria-label="Mobile navigation"
-            className="flex flex-col"
-          >
-            {/* DEBUG: RESPONSIVE_NAV - retain desktop utility actions on mobile. */}
-            <div className="mb-3 flex items-center gap-2 border-b border-white/10 pb-3">
-              <Link
-                ref={firstMenuLinkRef}
-                href="/search"
-                aria-label="Search tourism listings"
-                onClick={() => setOpen(false)}
-                className="flex size-10 items-center justify-center rounded-full bg-white/10 text-white transition hover:bg-white/20"
-              >
-                <Search className="size-4" />
-              </Link>
+          <div className="border-b border-tourism-border px-5 py-5">
+            <div className="flex items-center justify-between gap-4">
+              <div>
+                <p className="text-[9px] font-extrabold uppercase tracking-[0.18em] text-tourism-pink">
+                  Visit Koronadal
+                </p>
 
-              <Link
-                href="/search?favorites=true"
-                aria-label={`Favorites: ${favoriteCount}`}
-                onClick={() => setOpen(false)}
-                className="flex h-10 items-center gap-1.5 rounded-full bg-white/10 px-3 text-xs font-bold text-white transition hover:bg-white/20"
-              >
-                <Heart className="size-4" />
-                {favoriteCount}
-              </Link>
+                <p className="mt-1 text-sm font-black text-tourism-navy">
+                  {translations.language.label}
+                </p>
+              </div>
 
-              <span className="ml-auto text-[10px] font-bold text-white">EN</span>
-              <span className="text-[10px] text-white/40">/</span>
-              <span className="text-[10px] font-semibold text-white/65">FIL</span>
+              <LanguageSwitcher locale={locale} />
             </div>
+          </div>
 
-            {navigation.map(
-              (item) => (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  onClick={() =>
-                    setOpen(false)
-                  }
-                  className="border-b border-white/10 px-2 py-3.5 text-sm font-semibold text-white/90 transition hover:text-tourism-pink"
-                >
-                  {item.label}
-                </Link>
-              ),
-            )}
+          <nav
+            aria-label={
+              translations.accessibility
+                .mobileNavigation
+            }
+            className="px-3 py-3"
+          >
+            {navigation.map((item, index) => (
+              <Link
+                key={item.id}
+                ref={
+                  index === 0
+                    ? firstLinkRef
+                    : undefined
+                }
+                href={item.href}
+                onClick={handleNavigationClick}
+                className="flex min-h-11 items-center rounded-xl px-3 text-sm font-bold text-tourism-navy transition-colors motion-reduce:transition-none hover:bg-tourism-surface hover:text-tourism-pink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-tourism-pink focus-visible:ring-inset"
+              >
+                {navigationLabels[item.id]}
+              </Link>
+            ))}
 
             <Link
-              href="/reports"
-              onClick={() =>
-                setOpen(false)
-              }
-              className="mt-4 rounded-full bg-tourism-pink px-5 py-3 text-center text-sm font-bold text-white transition hover:bg-tourism-pink-dark"
+              href="/search"
+              onClick={handleNavigationClick}
+              className="mt-1 flex min-h-11 items-center gap-3 rounded-xl border-t border-tourism-border px-3 pt-3 text-sm font-bold text-tourism-navy transition-colors motion-reduce:transition-none hover:text-tourism-pink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-tourism-pink focus-visible:ring-inset"
             >
-              Report an Update
+              <Search
+                aria-hidden="true"
+                className="size-4 shrink-0"
+              />
+
+              <span>
+                {translations.nav.search}
+              </span>
+            </Link>
+
+            <Link
+              href="/search?favorites=true"
+              onClick={handleNavigationClick}
+              className="relative mt-1 flex min-h-11 items-center gap-3 rounded-xl px-3 text-sm font-bold text-tourism-navy transition-colors motion-reduce:transition-none hover:bg-tourism-surface hover:text-tourism-pink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-tourism-pink focus-visible:ring-inset"
+            >
+              <Heart
+                aria-hidden="true"
+                className="size-4 shrink-0"
+              />
+
+              <span>
+                {translations.nav.favorites}
+              </span>
+
+              {favoriteCount > 0 && (
+                <span
+                  aria-hidden="true"
+                  className="ml-auto flex min-w-5 items-center justify-center rounded-full bg-tourism-pink px-1.5 text-[9px] font-black leading-5 text-white"
+                >
+                  {favoriteCount > 99
+                    ? "99+"
+                    : favoriteCount}
+                </span>
+              )}
             </Link>
           </nav>
+
+          <div className="border-t border-tourism-border bg-tourism-surface px-5 py-4">
+            <p className="text-[9px] font-extrabold uppercase tracking-[0.18em] text-tourism-muted">
+              {translations.language.label}
+            </p>
+
+            <p className="mt-1 text-xs font-medium text-tourism-navy">
+              {locale === "en"
+                ? translations.language
+                    .english
+                : translations.language
+                    .filipino}
+            </p>
+
+            <div className="mt-3">
+              <LanguageSwitcher locale={locale} />
+            </div>
+          </div>
         </div>
       )}
     </div>

@@ -1,429 +1,534 @@
 "use client";
 
 import Link from "next/link";
-
-import {
-  AnimatePresence,
-  motion,
-  useReducedMotion,
-} from "motion/react";
-
 import {
   ArrowLeft,
   ArrowRight,
   Pause,
   Play,
 } from "lucide-react";
-
 import {
   useCallback,
   useEffect,
+  useMemo,
+  useRef,
   useState,
+  type KeyboardEvent,
 } from "react";
+
+import { getTranslations } from "@/lib/i18n";
+import {
+  defaultLocale,
+  type Locale,
+} from "@/lib/i18n/config";
+import type { HeroSlide } from "@/types/tourism";
 
 import { Navbar } from "@/components/layout/Navbar";
 
-import { heroSlides } from "@/data/hero-carousel.data";
+interface HeroCarouselProps {
+  slides: HeroSlide[];
+  locale?: Locale;
+}
 
-import { FavoriteButton } from "./FavoriteButton";
-import { TourismImage } from "./TourismImage";
+const AUTOPLAY_INTERVAL = 5000;
+const REDUCED_MOTION_QUERY =
+  "(prefers-reduced-motion: reduce)";
 
-const AUTOPLAY_MS = 5000;
-
-export function HeroCarousel() {
-  const [activeIndex, setActiveIndex] =
+export function HeroCarousel({
+  slides,
+  locale = defaultLocale,
+}: HeroCarouselProps) {
+  const [currentIndex, setCurrentIndex] =
     useState(0);
 
-  const [documentHidden, setDocumentHidden] =
+  const [isPaused, setIsPaused] =
     useState(false);
 
-  const [autoplayPaused, setAutoplayPaused] =
+  const [isHovered, setIsHovered] =
     useState(false);
 
-  const shouldReduceMotion =
-    useReducedMotion();
+  const [isFocused, setIsFocused] =
+    useState(false);
 
-  const slideCount = heroSlides.length;
+  const [prefersReducedMotion, setPrefersReducedMotion] =
+    useState(false);
 
-  const goTo = useCallback(
-    (index: number) => {
-      if (slideCount === 0) {
-        return;
-      }
+  const carouselRef =
+    useRef<HTMLDivElement>(null);
 
-      const normalized =
-        (index + slideCount) % slideCount;
+  const slideCount = slides.length;
 
-      setActiveIndex(normalized);
-    },
-    [slideCount],
+  const translations = useMemo(
+    () => getTranslations(locale),
+    [locale],
   );
 
-  const goNext = useCallback(() => {
-    if (slideCount === 0) {
-      return;
-    }
+  /*
+   * Derive a safe index instead of correcting state
+   * inside an effect when slide data changes.
+   */
+  const safeIndex =
+    slideCount > 0
+      ? Math.min(
+          currentIndex,
+          slideCount - 1,
+        )
+      : 0;
 
-    setActiveIndex(
-      (current) =>
-        (current + 1) % slideCount,
-    );
-  }, [slideCount]);
+  const currentSlide = slides[safeIndex];
 
-  const goPrevious = useCallback(() => {
-    if (slideCount === 0) {
-      return;
-    }
-
-    setActiveIndex(
-      (current) =>
-        (current - 1 + slideCount) %
-        slideCount,
-    );
-  }, [slideCount]);
-
- 
   useEffect(() => {
-    if (
-      documentHidden ||
-      autoplayPaused ||
-      shouldReduceMotion ||
-      slideCount <= 1
-    ) {
-      return;
-    }
-
-    const timer = window.setTimeout(
-      goNext,
-      AUTOPLAY_MS,
+    const mediaQuery = window.matchMedia(
+      REDUCED_MOTION_QUERY,
     );
 
-    return () => {
-      window.clearTimeout(timer);
+    const updatePreference = () => {
+      setPrefersReducedMotion(
+        mediaQuery.matches,
+      );
     };
-  }, [
-    activeIndex,
-    autoplayPaused,
-    documentHidden,
-    goNext,
-    shouldReduceMotion,
-    slideCount,
-  ]);
 
-  
-  useEffect(() => {
-    function handleVisibility() {
-      setDocumentHidden(document.hidden);
-    }
+    updatePreference();
 
-    handleVisibility();
-
-    document.addEventListener(
-      "visibilitychange",
-      handleVisibility,
+    mediaQuery.addEventListener(
+      "change",
+      updatePreference,
     );
 
     return () => {
-      document.removeEventListener(
-        "visibilitychange",
-        handleVisibility,
+      mediaQuery.removeEventListener(
+        "change",
+        updatePreference,
       );
     };
   }, []);
 
-  const activeSlide =
-    heroSlides[activeIndex];
+  const goToSlide = useCallback(
+    (nextIndex: number) => {
+      if (slideCount === 0) {
+        return;
+      }
 
-  if (!activeSlide) {
-    return null;
+      const normalizedIndex =
+        ((nextIndex % slideCount) +
+          slideCount) %
+        slideCount;
+
+      setCurrentIndex(normalizedIndex);
+    },
+    [slideCount],
+  );
+
+  const goToPrevious = useCallback(() => {
+    goToSlide(safeIndex - 1);
+  }, [goToSlide, safeIndex]);
+
+  const goToNext = useCallback(() => {
+    goToSlide(safeIndex + 1);
+  }, [goToSlide, safeIndex]);
+
+  /*
+   * Autoplay is disabled while:
+   * - there are not enough slides
+   * - reduced motion is preferred
+   * - the user paused the carousel
+   * - the carousel is hovered
+   * - the carousel currently contains keyboard focus
+   */
+  useEffect(() => {
+    if (
+      slideCount <= 1 ||
+      prefersReducedMotion ||
+      isPaused ||
+      isHovered ||
+      isFocused
+    ) {
+      return;
+    }
+
+    const timer = window.setInterval(() => {
+      setCurrentIndex(
+        (previousIndex) =>
+          (previousIndex + 1) %
+          slideCount,
+      );
+    }, AUTOPLAY_INTERVAL);
+
+    return () => {
+      window.clearInterval(timer);
+    };
+  }, [
+    isFocused,
+    isHovered,
+    isPaused,
+    prefersReducedMotion,
+    slideCount,
+  ]);
+
+  /*
+   * Preload the next background image.
+   */
+  useEffect(() => {
+    if (slideCount <= 1) {
+      return;
+    }
+
+    const nextIndex =
+      (safeIndex + 1) % slideCount;
+
+    const nextSlide = slides[nextIndex];
+
+    if (!nextSlide?.backgroundImage) {
+      return;
+    }
+
+    const image = new window.Image();
+    image.src = nextSlide.backgroundImage;
+  }, [safeIndex, slideCount, slides]);
+
+  function handleKeyDown(
+    event: KeyboardEvent<HTMLDivElement>,
+  ) {
+    switch (event.key) {
+      case "ArrowLeft":
+        event.preventDefault();
+        goToPrevious();
+        break;
+
+      case "ArrowRight":
+        event.preventDefault();
+        goToNext();
+        break;
+
+      case "Home":
+        event.preventDefault();
+        goToSlide(0);
+        break;
+
+      case "End":
+        event.preventDefault();
+        goToSlide(slideCount - 1);
+        break;
+
+      default:
+        break;
+    }
   }
 
-  const autoplayAvailable =
-    slideCount > 1 && !shouldReduceMotion;
+  if (slideCount === 0 || !currentSlide) {
+    return (
+      <section
+        aria-label="Hero"
+        className="relative min-h-[560px] bg-tourism-navy"
+      >
+        <Navbar locale={locale} />
+
+        <div className="mx-auto flex min-h-[560px] w-full max-w-[1440px] items-center px-5 pt-[70px] sm:px-8 lg:px-12">
+          <div className="max-w-xl">
+            <p className="text-[10px] font-extrabold uppercase tracking-[0.2em] text-tourism-pink">
+              {translations.home.hero.eyebrow}
+            </p>
+
+            <span
+              aria-hidden="true"
+              className="mt-3 block h-px w-7 bg-tourism-pink"
+            />
+
+            <h1 className="mt-5 text-[clamp(2.5rem,6vw,5rem)] font-black leading-[0.94] tracking-[-0.055em] text-white">
+              {translations.home.hero.title}
+            </h1>
+
+            <p className="mt-5 max-w-2xl text-sm leading-6 text-white/70 sm:text-base">
+              {translations.home.hero.description}
+            </p>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  const eyebrow =
+    currentSlide.eyebrow[locale];
+
+  const title =
+    currentSlide.title[locale];
+
+  const description =
+    currentSlide.description[
+      locale
+    ];
+
+  const ctaLabel =
+    currentSlide.cta.label[locale];
+
+  const isAutoplayActive =
+    slideCount > 1 &&
+    !prefersReducedMotion &&
+    !isPaused &&
+    !isHovered &&
+    !isFocused;
 
   return (
     <section
-      aria-label="Featured tourism destinations"
-      className="relative isolate min-h-[620px] overflow-hidden bg-tourism-navy text-white sm:min-h-[700px] lg:min-h-[760px]"
+      ref={carouselRef}
+      aria-label="Featured tourism highlights"
+      aria-roledescription="carousel"
+      className="relative min-h-[680px] overflow-hidden bg-tourism-navy sm:min-h-[720px]"
+      onMouseEnter={() =>
+        setIsHovered(true)
+      }
+      onMouseLeave={() =>
+        setIsHovered(false)
+      }
+      onFocus={() => setIsFocused(true)}
+      onBlur={(event) => {
+        if (
+          !event.currentTarget.contains(
+            event.relatedTarget,
+          )
+        ) {
+          setIsFocused(false);
+        }
+      }}
+      onKeyDown={handleKeyDown}
+      tabIndex={0}
     >
-      <Navbar />
+      <Navbar locale={locale} />
 
-      {/* =====================================================
-          BACKGROUND
-          ===================================================== */}
-
-      <AnimatePresence
-        initial={false}
-        mode="sync"
+      {/* Background image layers */}
+      <div
+        aria-hidden="true"
+        className="absolute inset-0"
       >
-        <motion.div
-          key={activeSlide.id}
-          className="absolute inset-0"
-          initial={
-            shouldReduceMotion
-              ? {
-                  opacity: 1,
-                }
-              : {
-                  opacity: 0,
-                  scale: 1.015,
-                }
-          }
-          animate={{
-            opacity: 1,
-            scale: 1,
-          }}
-          exit={{
-            opacity: 0,
-          }}
-          transition={{
-            duration: shouldReduceMotion
-              ? 0
-              : 0.55,
-            ease: "easeInOut",
-          }}
-        >
-          {activeSlide.backgroundImage ? (
-            <TourismImage
-              src={
-                activeSlide.backgroundImage
-              }
-              alt={
-                activeSlide.backgroundAlt
-              }
-              priority
-              sizes="100vw"
-              style={{
-                objectPosition:
-                  activeSlide.backgroundPosition ??
-                  "center center",
-              }}
-            />
-          ) : (
+        {slides.map((slide, index) => {
+          const isActive =
+            index === safeIndex;
+
+          return (
             <div
-              aria-hidden="true"
-              className="absolute inset-0 bg-tourism-navy"
-            />
-          )}
-
-          {/* Left-side darkness preserves text contrast. */}
-
-          <div
-            aria-hidden="true"
-            className="absolute inset-0 bg-[linear-gradient(90deg,rgba(8,25,39,.82)_0%,rgba(8,25,39,.55)_38%,rgba(8,25,39,.16)_72%,rgba(8,25,39,.08)_100%)]"
-          />
-
-          <div
-            aria-hidden="true"
-            className="absolute inset-x-0 bottom-0 h-52 bg-gradient-to-t from-black/40 to-transparent"
-          />
-        </motion.div>
-      </AnimatePresence>
-
-      {/* =====================================================
-          CONTENT
-          ===================================================== */}
-
-      <div className="relative z-10 flex min-h-[620px] items-center sm:min-h-[700px] lg:min-h-[760px]">
-        <div className="mx-auto w-full max-w-[1280px] px-5 pt-16 sm:px-8 lg:px-10 xl:px-12">
-          <div className="max-w-[660px]">
-            <AnimatePresence
-              initial={false}
-              mode="wait"
+              key={slide.id}
+              className={[
+                "absolute inset-0",
+                prefersReducedMotion
+                  ? ""
+                  : "transition-opacity duration-700 ease-out motion-reduce:transition-none",
+                isActive
+                  ? "opacity-100"
+                  : "pointer-events-none opacity-0",
+              ].join(" ")}
             >
-              <motion.div
-                key={activeSlide.id}
-                initial={{
-                  opacity: shouldReduceMotion
-                    ? 1
-                    : 0,
-                  y: shouldReduceMotion
-                    ? 0
-                    : 15,
+              <div
+                className={[
+                  "absolute inset-0 size-full bg-cover bg-center",
+                  prefersReducedMotion
+                    ? ""
+                    : "transition-transform duration-[6500ms] ease-out motion-reduce:transition-none",
+                  isActive
+                    ? "scale-105"
+                    : "scale-100",
+                ].join(" ")}
+                style={{
+                  backgroundImage: `url("${slide.backgroundImage}")`,
+                  backgroundPosition:
+                    slide.backgroundPosition ??
+                    "center",
                 }}
-                animate={{
-                  opacity: 1,
-                  y: 0,
-                }}
-                exit={{
-                  opacity: shouldReduceMotion
-                    ? 1
-                    : 0,
-                  y: shouldReduceMotion
-                    ? 0
-                    : -10,
-                }}
-                transition={{
-                  duration:
-                    shouldReduceMotion
-                      ? 0
-                      : 0.4,
-                }}
-              >
-                <p className="mb-4 flex items-center gap-3 text-[10px] font-extrabold tracking-[0.16em] text-white">
-                  <span
-                    aria-hidden="true"
-                    className="h-px w-7 bg-tourism-pink"
-                  />
+              />
+            </div>
+          );
+        })}
 
-                  {activeSlide.eyebrow}
-                </p>
+        <div className="absolute inset-0 bg-tourism-navy/45" />
 
-                <h1 className="max-w-[700px] text-5xl font-black leading-[0.95] tracking-[-0.045em] sm:text-6xl lg:text-[76px]">
-                  {activeSlide.title}
-                </h1>
+        <div className="absolute inset-0 bg-gradient-to-r from-tourism-navy/90 via-tourism-navy/55 to-tourism-navy/10" />
+      </div>
 
-                <p className="mt-6 max-w-[570px] text-sm leading-6 text-white/85 sm:text-base sm:leading-7">
-                  {activeSlide.description}
-                </p>
+      {/* Main hero content */}
+      <div className="relative z-20 mx-auto flex min-h-[680px] w-full max-w-[1440px] items-end px-5 pb-24 pt-[150px] sm:min-h-[720px] sm:px-8 sm:pb-28 lg:px-12">
+        <div
+          key={currentSlide.id}
+          className={[
+            "max-w-3xl",
+            prefersReducedMotion
+              ? ""
+              : "animate-in fade-in duration-500",
+          ].join(" ")}
+        >
+          <div className="flex items-center gap-3">
+            <span
+              aria-hidden="true"
+              className="h-px w-7 bg-tourism-pink"
+            />
 
-                <div className="mt-8 flex flex-wrap items-center gap-3">
-                  <Link
-                    href={
-                      activeSlide.cta.href
-                    }
-                    className="rounded-full bg-tourism-pink px-6 py-3 text-xs font-extrabold text-white shadow-xl transition hover:bg-tourism-pink-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-tourism-navy motion-reduce:transition-none"
-                  >
-                    {
-                      activeSlide.cta
-                        .label
-                    }
-                  </Link>
-
-                  <a
-                    href="#tourism-map"
-                    className="rounded-full border border-white/60 bg-black/10 px-6 py-3 text-xs font-bold text-white backdrop-blur-sm transition hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-tourism-navy motion-reduce:transition-none"
-                  >
-                    View on Map
-                  </a>
-
-                  <FavoriteButton
-                    itemId={`hero:${activeSlide.id}`}
-                    label={
-                      activeSlide.title
-                    }
-                    className="flex size-11 items-center justify-center rounded-full border border-white/55 bg-black/10 text-white backdrop-blur-sm transition hover:bg-white/10 motion-reduce:transition-none"
-                    iconClassName="size-[18px]"
-                  />
-                </div>
-              </motion.div>
-            </AnimatePresence>
+            <p className="text-[10px] font-extrabold uppercase tracking-[0.23em] text-tourism-pink">
+              {eyebrow}
+            </p>
           </div>
+
+          <h1 className="mt-5 max-w-3xl text-[clamp(2.75rem,7vw,5.8rem)] font-black leading-[0.91] tracking-[-0.065em] text-white">
+            {title}
+          </h1>
+
+          <p className="mt-6 max-w-2xl text-sm leading-6 text-white/75 sm:text-base sm:leading-7">
+            {description}
+          </p>
+
+          {currentSlide.cta && (
+            <div className="mt-7">
+              <Link
+                href={currentSlide.cta.href}
+                className="inline-flex min-h-11 items-center gap-2 rounded-full bg-tourism-pink px-6 py-2.5 text-xs font-extrabold text-white shadow-[0_10px_24px_rgba(245,43,145,0.2)] transition duration-200 motion-reduce:transition-none hover:-translate-y-0.5 hover:bg-tourism-pink-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-tourism-navy"
+              >
+                {ctaLabel}
+
+                <ArrowRight
+                  aria-hidden="true"
+                  className="size-3.5"
+                />
+              </Link>
+            </div>
+          )}
         </div>
       </div>
 
-      {/* =====================================================
-          CONTROLS
-          ===================================================== */}
-
-      {slideCount > 1 && (
-        <div className="absolute inset-x-0 bottom-7 z-30">
-          <div className="mx-auto flex w-full max-w-[1280px] items-center justify-between px-5 sm:px-8 lg:px-10 xl:px-12">
-            {/* One continuous slide-position track. */}
-
-            <div
-              className="flex w-40 overflow-hidden rounded-full"
-              aria-label="Hero slide navigation"
+      {/* Controls */}
+      <div className="absolute inset-x-0 bottom-7 z-30">
+        <div className="mx-auto flex w-full max-w-[1440px] items-center justify-between gap-5 px-5 sm:px-8 lg:px-12">
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              aria-label={
+                translations.accessibility
+                  .previousSlide
+              }
+              onClick={goToPrevious}
+              disabled={slideCount <= 1}
+              className="flex size-10 items-center justify-center rounded-full border border-white/20 bg-tourism-navy/35 text-white backdrop-blur-sm transition motion-reduce:transition-none hover:bg-white/10 disabled:pointer-events-none disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-tourism-navy"
             >
-              {heroSlides.map(
+              <ArrowLeft
+                aria-hidden="true"
+                className="size-4"
+              />
+            </button>
+
+            <button
+              type="button"
+              aria-label={
+                translations.accessibility
+                  .nextSlide
+              }
+              onClick={goToNext}
+              disabled={slideCount <= 1}
+              className="flex size-10 items-center justify-center rounded-full border border-white/20 bg-tourism-navy/35 text-white backdrop-blur-sm transition motion-reduce:transition-none hover:bg-white/10 disabled:pointer-events-none disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-tourism-navy"
+            >
+              <ArrowRight
+                aria-hidden="true"
+                className="size-4"
+              />
+            </button>
+
+            {slideCount > 1 && (
+              <button
+                type="button"
+                aria-label={
+                  isPaused
+                    ? translations
+                        .accessibility
+                        .resumeSlide
+                    : translations
+                        .accessibility
+                        .pauseSlide
+                }
+                aria-pressed={isPaused}
+                onClick={() =>
+                  setIsPaused(
+                    (previous) => !previous,
+                  )
+                }
+                disabled={
+                  prefersReducedMotion
+                }
+                className="flex size-10 items-center justify-center rounded-full border border-white/20 bg-tourism-navy/35 text-white backdrop-blur-sm transition motion-reduce:transition-none hover:bg-white/10 disabled:pointer-events-none disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-tourism-navy"
+              >
+                {isPaused ? (
+                  <Play
+                    aria-hidden="true"
+                    className="size-3.5"
+                  />
+                ) : (
+                  <Pause
+                    aria-hidden="true"
+                    className="size-3.5"
+                  />
+                )}
+              </button>
+            )}
+          </div>
+
+          {/* Indicators */}
+          {slideCount > 1 && (
+            <div
+              className="flex items-center gap-2"
+              aria-label="Slide navigation"
+            >
+              {slides.map(
                 (slide, index) => {
                   const active =
-                    index === activeIndex;
+                    index === safeIndex;
 
                   return (
                     <button
                       key={slide.id}
                       type="button"
-                      aria-label={`Go to slide ${
-                        index + 1
-                      } of ${slideCount}: ${
-                        slide.title
-                      }`}
+                      aria-label={`Go to slide ${index + 1}`}
                       aria-current={
                         active
                           ? "true"
                           : undefined
                       }
                       onClick={() =>
-                        goTo(index)
+                        goToSlide(index)
                       }
-                      className="h-5 flex-1 py-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-tourism-navy"
-                    >
-                      <span
-                        aria-hidden="true"
-                        className={`block h-[2px] w-full ${
-                          active
-                            ? "bg-tourism-pink"
-                            : "bg-white/35"
-                        }`}
-                      />
-                    </button>
+                      className={[
+                        "h-1.5 rounded-full transition-all duration-200 motion-reduce:transition-none",
+                        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-tourism-navy",
+                        active
+                          ? "w-8 bg-tourism-pink"
+                          : "w-3 bg-white/45 hover:bg-white/75",
+                      ].join(" ")}
+                    />
                   );
                 },
               )}
             </div>
+          )}
 
-            <div className="flex items-center gap-2">
-              {autoplayAvailable && (
-                <button
-                  type="button"
-                  aria-label={
-                    autoplayPaused
-                      ? "Resume carousel autoplay"
-                      : "Pause carousel autoplay"
-                  }
-                  aria-pressed={
-                    autoplayPaused
-                  }
-                  onClick={() =>
-                    setAutoplayPaused(
-                      (paused) =>
-                        !paused,
-                    )
-                  }
-                  className="flex size-10 items-center justify-center rounded-full border border-white/35 bg-black/10 text-white backdrop-blur-sm transition hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-tourism-navy motion-reduce:transition-none"
-                >
-                  {autoplayPaused ? (
-                    <Play
-                      aria-hidden="true"
-                      className="ml-0.5 size-4 fill-current"
-                    />
-                  ) : (
-                    <Pause
-                      aria-hidden="true"
-                      className="size-4"
-                    />
-                  )}
-                </button>
+          <div className="hidden min-w-[90px] justify-end sm:flex">
+            <span className="text-[9px] font-extrabold uppercase tracking-[0.18em] text-white/50">
+              {String(
+                safeIndex + 1,
+              ).padStart(2, "0")}{" "}
+              /{" "}
+              {String(slideCount).padStart(
+                2,
+                "0",
               )}
-
-              <button
-                type="button"
-                aria-label="Previous slide"
-                onClick={goPrevious}
-                className="flex size-10 items-center justify-center rounded-full border border-white/35 bg-black/10 text-white backdrop-blur-sm transition hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-tourism-navy motion-reduce:transition-none"
-              >
-                <ArrowLeft
-                  aria-hidden="true"
-                  className="size-4"
-                />
-              </button>
-
-              <button
-                type="button"
-                aria-label="Next slide"
-                onClick={goNext}
-                className="flex size-10 items-center justify-center rounded-full bg-white text-tourism-navy transition hover:bg-tourism-pink hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-tourism-navy motion-reduce:transition-none"
-              >
-                <ArrowRight
-                  aria-hidden="true"
-                  className="size-4"
-                />
-              </button>
-            </div>
+            </span>
           </div>
         </div>
-      )}
+      </div>
+
+      {/* Screen-reader announcement */}
+      <div
+        aria-live={
+          isAutoplayActive
+            ? "off"
+            : "polite"
+        }
+        className="sr-only"
+      >
+        {title}
+      </div>
     </section>
   );
 }

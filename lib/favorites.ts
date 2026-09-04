@@ -1,8 +1,6 @@
-const FAVORITES_STORAGE_KEY =
-  "koronadal-tourism-favorites";
+const FAVORITES_STORAGE_KEY = "koronadal-tourism-favorites";
 
-const FAVORITES_CHANGED_EVENT =
-  "koronadal:favorites-changed";
+const FAVORITES_CHANGED_EVENT = "koronadal:favorites-changed";
 
 const EMPTY_FAVORITES: string[] = [];
 
@@ -18,9 +16,7 @@ function readFavoritesFromStorage(): string[] {
   }
 
   try {
-    const raw = window.localStorage.getItem(
-      FAVORITES_STORAGE_KEY,
-    );
+    const raw = window.localStorage.getItem(FAVORITES_STORAGE_KEY);
 
     if (!raw) {
       return EMPTY_FAVORITES;
@@ -30,9 +26,7 @@ function readFavoritesFromStorage(): string[] {
 
     if (
       !Array.isArray(parsed) ||
-      !parsed.every(
-        (item) => typeof item === "string",
-      )
+      !parsed.every((item) => typeof item === "string")
     ) {
       return EMPTY_FAVORITES;
     }
@@ -43,16 +37,12 @@ function readFavoritesFromStorage(): string[] {
   }
 }
 
-export function subscribeToFavorites(
-  callback: () => void,
-): () => void {
+export function subscribeToFavorites(callback: () => void): () => void {
   if (!isBrowser()) {
     return () => {};
   }
 
-  const handleStorageChange = (
-    event: StorageEvent,
-  ) => {
+  const handleStorageChange = (event: StorageEvent) => {
     if (
       event.storageArea === window.localStorage &&
       event.key === FAVORITES_STORAGE_KEY
@@ -62,26 +52,14 @@ export function subscribeToFavorites(
     }
   };
 
-  window.addEventListener(
-    FAVORITES_CHANGED_EVENT,
-    callback,
-  );
+  window.addEventListener(FAVORITES_CHANGED_EVENT, callback);
 
-  window.addEventListener(
-    "storage",
-    handleStorageChange,
-  );
+  window.addEventListener("storage", handleStorageChange);
 
   return () => {
-    window.removeEventListener(
-      FAVORITES_CHANGED_EVENT,
-      callback,
-    );
+    window.removeEventListener(FAVORITES_CHANGED_EVENT, callback);
 
-    window.removeEventListener(
-      "storage",
-      handleStorageChange,
-    );
+    window.removeEventListener("storage", handleStorageChange);
   };
 }
 
@@ -103,16 +81,11 @@ export function getServerFavoritesSnapshot(): string[] {
   return EMPTY_FAVORITES;
 }
 
-export function isFavorite(
-  itemId: string,
-): boolean {
+export function isFavorite(itemId: string): boolean {
   return getFavorites().includes(itemId);
 }
 
-export function setFavorite(
-  itemId: string,
-  favorite: boolean,
-): string[] {
+export function setFavorite(itemId: string, favorite: boolean): string[] {
   if (!isBrowser()) {
     return getFavoritesSnapshot();
   }
@@ -131,10 +104,7 @@ export function setFavorite(
   cachedFavorites = result;
 
   try {
-    window.localStorage.setItem(
-      FAVORITES_STORAGE_KEY,
-      JSON.stringify(result),
-    );
+    window.localStorage.setItem(FAVORITES_STORAGE_KEY, JSON.stringify(result));
   } catch {
     /*
      * Favorites are enhancement state.
@@ -142,11 +112,7 @@ export function setFavorite(
      */
   }
 
-  window.dispatchEvent(
-    new CustomEvent(
-      FAVORITES_CHANGED_EVENT,
-    ),
-  );
+  window.dispatchEvent(new CustomEvent(FAVORITES_CHANGED_EVENT));
 
   return result;
 }
